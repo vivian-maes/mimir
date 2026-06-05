@@ -1,0 +1,56 @@
+# Profil Hermes « wiki-curator » — COUCHE 2 (opt-in, jamais requise).
+#
+# Les 5 skills wiki-* sont portables et fonctionnent dans n'importe quel agent
+# SANS ce profil (couche 1). Ce profil apporte uniquement le confort « clé en
+# main » : identité persistante (SOUL.md), mémoire des conventions du vault, et
+# synchro planifiée (cron). Installable en un coup :
+#
+#   hermes profile install https://github.com/<user>/mimir.git#profiles/wiki-curator
+#
+# Réf. SPEC §11 (annexe Hermes — modèle en deux couches).
+
+apiVersion: hermes/v1
+kind: Profile
+
+metadata:
+  name: wiki-curator
+  version: "0.2.0"
+  author: Vivian MAES
+  description: >
+    Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) à partir
+    d'un flux de sources : extrait, compile par notion, indexe, et synchronise.
+
+# Persona (identité persistante + mémoire de structuration).
+soul: ./SOUL.md
+
+# Configuration de l'agent (work_root, backend de synchro, external_dirs).
+config: ./config.yaml
+
+# Les MÊMES skills que la couche 1 — référencés depuis le mono-repo, jamais
+# dupliqués. En production : installés via le tap ; en dev : external_dirs.
+skills:
+  - skills/wiki-extract
+  - skills/wiki-ingest
+  - skills/wiki-reading-grid
+  - skills/wiki-index
+  - skills/wiki-sync
+
+# Ressources embarquées du profil.
+assets:
+  - path: ../../filters.txt
+    as: filters.txt           # template d'exclusions rclone (à adapter au vault)
+  - path: ../../wiki.config.example.json
+    as: wiki.config.example.json
+
+# Synchro planifiée — cron SELF-CONTAINED (chemins absolus, commande inline,
+# aucune dépendance au chargement d'une autre skill ; sessions cron sans cwd,
+# SPEC §12.7). Adapter le chemin du dépôt cloné des skills au déploiement réel.
+cron:
+  - name: wiki-sync-pull-push
+    schedule: "*/30 * * * *"   # toutes les 30 min
+    command: >
+      python /chemin/absolu/vers/mimir/skills/wiki-sync/scripts/wiki_sync.py
+      sync --config /chemin/absolu/vers/wiki.config.json
+    description: >
+      Verrou → pull → push → validate du vault (backend selon sync.backend de
+      la config). N'opère que sous work_root ; verrou hors zone synchronisée.

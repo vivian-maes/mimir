@@ -1,0 +1,86 @@
+---
+name: wiki-index
+description: >
+  Régénère les index du wiki à deux niveaux (INDEX principal des sujets + INDEX par sujet :
+  notions et grilles) et lance l'audit liens en lecture seule (cassés, fantômes, entrées
+  vides). Déclencher sur « régénère les index », « audite les liens du wiki », « mets à jour
+  la carte des sujets ». Lecture seule pour l'audit ; écritures bornées à work_root.
+license: Proprietary
+metadata:
+  version: "0.2.0"
+  author: Vivian MAES
+  tags: [knowledge-base, obsidian, index, audit]
+  hermes:
+    profile: wiki-curator
+---
+
+# wiki-index
+
+## Quand l'utiliser
+
+Après compilation (`wiki-ingest`) et/ou génération de grilles (`wiki-reading-grid`), pour
+**maintenir la navigation** et **vérifier l'intégrité** des liens. Trigger : « régénère les
+index », « audite les liens », « mets à jour la carte des sujets ».
+
+## Principe
+
+Skill **100 % déterministe** : il n'y a **rien à rédiger**, tu enchaînes des sous-commandes.
+
+```sh
+python scripts/wiki_index.py --config <wiki.config.json> <regenerate|audit> …
+```
+
+## Procédure
+
+1. **Régénération des index** — reconstruit `wiki/INDEX.md` + tous les `wiki/<sujet>/_INDEX.md` :
+   ```sh
+   python scripts/wiki_index.py --config CFG regenerate --skip-sync
+   ```
+   - **INDEX principal** : la liste des **sujets** → leur index de sujet. La **description**
+     éditoriale d'un sujet (texte après le `—`) est **préservée** si tu l'as écrite à la main ;
+     sinon, fallback automatique sur les 3 premières notions.
+   - **INDEX par sujet** : les **notions** (résumé d'une ligne tiré du callout `>` de l'article)
+     + les **grilles de lecture** rattachées (une grille est rattachée à chaque sujet qu'elle cite).
+   - Les wikilinks sont émis dans la **forme majoritaire** du vault (préfixée `[[wiki/x]]` vs
+     relative `[[x]]`). `--dry-run` calcule sans écrire.
+
+2. **Audit liens** — **lecture seule**, 3 passes, **aucune écriture** :
+   ```sh
+   python scripts/wiki_index.py --config CFG audit          # rapport lisible
+   python scripts/wiki_index.py --config CFG audit --json   # rapport machine
+   ```
+   - **Passe 1 — liens cassés** : un `[[…]]` d'un article/grille sans fichier cible.
+   - **Passe 2 — fichiers fantômes** : un article réel non listé dans le `_INDEX.md` de son sujet.
+   - **Passe 3 — index → vide** : un `[[…]]` d'un fichier d'index sans cible.
+
+   Code retour **0 ssi 0 anomalie** (exploitable en CI). Un lien cassé = **travail restant**
+   (notion à compiler, grille à régénérer), pas forcément un bug du pipeline. Périmètre :
+   wikilinks `wiki/` + `reading-grids/` ; les liens vers `raw/` sont hors scope.
+
+## Format produit
+
+```markdown
+# Index du wiki
+
+> Carte par sujet.
+
+- [[navigation/_INDEX]] — pilotage, position, marées.
+```
+
+```markdown
+# Index — navigation
+
+## Notions
+
+- [[navigation/relevement]] — Mesure de l'angle vers un amer.
+
+## Grilles de lecture
+
+- [[reading-grids/navigation-cotiere]] — Navigation côtière (12 ch.)
+```
+
+## Références
+
+- Normalisation de chemins (`os.path.normpath`), forme majoritaire, NFD/NFC : [`../_shared-references/scripts/`](../_shared-references/scripts/) (`wikilinks.py`, `slug.py`), [`CONVENTIONS.md`](../_shared-references/CONVENTIONS.md) §3.
+- Résumé d'article (callout `>`) : [`../_shared-references/scripts/article_index.py`](../_shared-references/scripts/article_index.py).
+- Spécification : `SPEC.md` §9.

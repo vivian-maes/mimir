@@ -1,0 +1,23 @@
+{
+  "work_root": "/chemin/vers/votre/Vault/02 - second cerveau",
+  "layout": {
+    "inbox": "_inbox",
+    "raw": "raw",
+    "wiki": "wiki",
+    "reading_grids": "reading-grids",
+    "ledger": ".wiki/ingest-ledger.json"
+  },
+  "sync": {
+    "backend": "rclone",
+    "rclone": {
+      "remote": "mimir-vault:Vault/02 - second cerveau",
+      "filters": "filters.txt",
+      "lock_dir": "~/.cache/mimir/wiki-sync.lock"
+    },
+    "git": {
+      "repo_root": "/chemin/vers/votre/Vault",
+      "branch": "main",
+      "scope": ["_inbox", "raw", "wiki", "reading-grids"]
+    }
+  }
+}

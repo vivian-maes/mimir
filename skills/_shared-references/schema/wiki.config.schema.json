@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/vivianmaes/mimir/skills/_shared-references/schema/wiki.config.schema.json",
+  "title": "Mimir — wiki.config.json",
+  "description": "Racine de travail (work_root) + layout dérivé + backend de synchro. SPEC §2.",
+  "type": "object",
+  "required": ["work_root"],
+  "additionalProperties": false,
+  "properties": {
+    "work_root": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Racine unique. Mode A = racine du vault ; mode B = sous-répertoire dédié. Tous les autres chemins en dérivent."
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["A", "B"],
+      "description": "Optionnel : forçage du mode. Sinon déduit (A si .obsidian/ présent à work_root, B sinon)."
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Chemins relatifs à work_root. Valeurs par défaut si omis.",
+      "properties": {
+        "inbox": { "type": "string", "default": "_inbox" },
+        "raw": { "type": "string", "default": "raw" },
+        "wiki": { "type": "string", "default": "wiki" },
+        "reading_grids": { "type": "string", "default": "reading-grids" },
+        "ledger": { "type": "string", "default": ".wiki/ingest-ledger.json" }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend"],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["rclone", "git"],
+          "description": "Backend de synchro sélectionné (§10)."
+        },
+        "rclone": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "remote": {
+              "type": "string",
+              "description": "Remote rclone borné à work_root (confinement, §2/§10)."
+            },
+            "filters": { "type": "string", "default": "filters.txt" },
+            "lock_dir": {
+              "type": "string",
+              "description": "Dossier de verrou HORS zone synchronisée (vigilance §12.9)."
+            }
+          }
+        },
+        "git": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "repo_root": { "type": "string" },
+            "branch": { "type": "string", "default": "main" },
+            "scope": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Sous-arbres versionnés (dropzone _inbox incluse, SPEC §6).",
+              "default": ["_inbox", "raw", "wiki", "reading-grids"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# wiki-extract — dépendances Python (Phase 1).
+#
+# Ces libs AMÉLIORENT la qualité d'extraction mais ne sont PAS strictement requises :
+# chaque extracteur tente d'abord la lib riche, puis dégrade vers un fallback CLI
+# (poppler : pdftotext/pdfimages/pdftoppm) ou stdlib (zipfile/html.parser/urllib).
+# La skill se charge même si une lib manque (portabilité Hermes).
+#
+# OCR : nécessite l'outil système `ocrmypdf` (brew install ocrmypdf — tire tesseract
+# + ghostscript) et/ou `tesseract` + `pdftoppm` (poppler) pour le fallback.
+
+pymupdf          # PDF : texte fidèle (get_text("text")), TOC natif, extraction d'images
+ebooklib         # EPUB : lecture spine/manifest (fallback : zipfile stdlib)
+beautifulsoup4   # EPUB/web : extraction texte XHTML/HTML
+trafilatura      # web : nettoyage + conversion markdown de qualité
+markdownify      # web : fallback HTML -> markdown
+requests         # web : fetch HTTP (fallback : urllib stdlib)

@@ -1,0 +1,22 @@
+# Configuration de l'agent Hermes pour le profil wiki-curator.
+# Valeurs d'EXEMPLE (chemins génériques) — à adapter au déploiement réel.
+#
+# Deux modes d'installation des skills :
+#   - Production : via le tap (hermes skills install <user>/mimir/skills/wiki-*).
+#   - Boucle de dev : external_dirs ci-dessous (clone local, rechargé direct).
+
+skills:
+  # Boucle de dev : pointer vers le clone local du mono-repo (SPEC §11.7).
+  # En production, retirer ce bloc et installer via le tap.
+  external_dirs:
+    - /chemin/absolu/vers/mimir/skills
+
+# Pointeur vers la config runtime Mimir (work_root, layout, sync.backend).
+# Voir wiki.config.example.json à la racine du repo pour le schéma complet.
+mimir:
+  config: /chemin/absolu/vers/wiki.config.json
+
+# Jeton GitHub pour le tap (anti rate-limit : 5 000 req/h au lieu de 60).
+# À placer plutôt dans ~/.hermes/.env que versionné. Scope : public_repo.
+# env:
+#   GITHUB_TOKEN: "ghp_xxx"

@@ -1,0 +1,76 @@
+---
+name: wiki-extract
+description: >
+  Extrait une source (PDF, EPUB, URL) en matière brute immuable dans raw/<type>/.
+  Extracteurs pluggables exposant un contrat commun ; PDF avec OCR auto si pas de
+  couche texte. Déclencher sur « extrais ce PDF/EPUB/URL en raw », « ajoute cette
+  source », « clippe cette page ». N'écrit que dans raw/ (confinement).
+license: Proprietary
+metadata:
+  version: "0.2.0"
+  author: Vivian MAES
+  tags: [knowledge-base, obsidian, extraction, pdf, epub, ocr, scraping]
+  hermes:
+    profile: wiki-curator
+---
+
+# wiki-extract
+
+## Quand l'utiliser
+
+Pour déposer une nouvelle source dans le second cerveau. Trigger : « extrais ce PDF/EPUB/URL »,
+« ajoute cette source », « clippe cette page ». Une source peut aussi être **déposée dans `_inbox/`**
+(dropzone synchronisée surveillée — voie privilégiée du cron Hermes) ; les binaires y transitent avant
+d'être déplacés vers `raw/<type>/`.
+
+## Usage
+
+```sh
+python scripts/wiki_extract.py --config <wiki.config.json> [SOURCE] [--lang fra+eng] [--dry-run]
+```
+
+- **SOURCE absent** → scan de `_inbox/` (mode cron/curator) : tous les binaires déposés sont traités.
+- **SOURCE = chemin `.pdf`/`.epub`** → extraction de ce binaire.
+- **SOURCE = URL `http(s)`** → clipping web.
+
+## Procédure
+
+Contrat d'extracteur commun, un module par format dans [`scripts/extractors/`](scripts/extractors/) :
+
+```
+extract(source) → ExtractResult{ raw_content, content_ext, metadata, structure, assets[], doc_type }
+```
+
+Chaque extracteur **tente la lib riche puis dégrade** vers un fallback CLI/stdlib (la skill se charge
+même si une lib manque). **Jamais d'invention de contenu** (§12.5) : si l'extraction est impossible,
+`ExtractorError`/`ExtractorUnavailable` est levée et **rien** n'est écrit dans `raw/`.
+
+- **PDF** : couche texte (`fitz` → `pdftotext`) ; si quasi vide → **OCR auto** (`ocrmypdf` →
+  `pdftoppm`+`tesseract`) → `ocr:true`, sinon `ExtractorUnavailable`. Chapitrage `get_toc()` →
+  `.toc.json` ; images (`fitz`/`pdfimages`) → `_assets/`. Sortie : `<base>.pdf.txt` + `<base>.toc.json`.
+- **EPUB** : spine = chapitrage (`ebooklib` → `zipfile` stdlib) → `<base>.epub.txt` + `.toc.json` ;
+  images du manifest → `_assets/`.
+- **Web/URL** : nettoyage (`trafilatura` → `bs4`+`markdownify` → stdlib) → markdown **inline**
+  `<slug>-<AAAAMMJJ>.md` (frontmatter YAML) ; images localisées → `_assets/`, liens réécrits en relatif.
+
+### Flux `_inbox/` (orchestrateur)
+
+1. **Verrou** `wiki-sync` (mkdir hors `work_root`, §12.9 ; stub P1, vrai backend P4).
+2. Routage **par extension** (URL → web).
+3. `extract()` → calcul du **SHA du contenu**.
+4. **Dédup** : SHA déjà présent dans `_status.md` → binaire re-déposé **supprimé**, rien réécrit.
+5. Écritures (ordre : `_assets/` → contenu → `.toc.json` → `_status.md`), toutes **confinées**.
+6. **Move** du binaire `_inbox/` → `raw/<type>/` **après** écriture réussie (reprise sûre sur crash).
+
+> **Immutabilité** : raw append-only, suffixage cohérent `-2` (binaire + `.txt` + `.toc.json`) ;
+> seule mutation tolérée = `_status.md` (SHA du **contenu**, pas du binaire).
+
+> **Import du socle partagé** : résolu par chemin relatif (`../../_shared-references/scripts`) avec
+> repli sur la variable `MIMIR_SHARED`. Durcissement packaging Hermes prévu en Phase 5.
+
+## Références
+
+- Formats raw, immutabilité, sidecars : [`../_shared-references/CONVENTIONS.md`](../_shared-references/CONVENTIONS.md) §2–§5, [`FRONTMATTERS.md`](../_shared-references/FRONTMATTERS.md) §3–§5.
+- Slug ASCII, NFD/NFC : [`../_shared-references/scripts/slug.py`](../_shared-references/scripts/slug.py).
+- Outillage (PyMuPDF, ocrmypdf, tesseract) : [`../_shared-references/TOOLING.md`](../_shared-references/TOOLING.md).
+- Spécification : `SPEC.md` §4, §6.
