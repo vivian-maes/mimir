@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/vivianmaes/mimir/skills/_shared-references/schema/wiki.config.schema.json",
+  "$id": "https://github.com/vivian-maes/mimir/skills/_shared-references/schema/wiki.config.schema.json",
   "title": "Mimir — wiki.config.json",
   "description": "Racine de travail (work_root) + layout dérivé + backend de synchro. SPEC §2.",
   "type": "object",

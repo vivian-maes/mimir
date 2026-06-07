@@ -144,7 +144,11 @@ def _split_csv(value: str | None) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compilation raw/ → wiki/ par notion (Mimir).")
-    parser.add_argument("--config", required=True, help="Chemin du wiki.config.json")
+    parser.add_argument(
+        "--config", default=None,
+        help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
+             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_inv = sub.add_parser("inventory", help="Worklist des sources à compiler (diff ledger).")
@@ -171,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     p_fin.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args(argv)
-    cfg = config_loader.load_config(args.config)
+    cfg = config_loader.load_resolved_config(args.config)
 
     if args.cmd == "inventory":
         data = cmd_inventory(cfg, args.source, skip_sync=args.skip_sync, dry_run=args.dry_run)

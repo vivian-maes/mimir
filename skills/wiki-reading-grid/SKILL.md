@@ -7,11 +7,26 @@ description: >
   grille de lecture de cet ouvrage », « régénère la grille ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, reading-grid, navigation]
   hermes:
     profile: wiki-curator
+    category: knowledge-management
+    related_skills: [wiki-extract, wiki-ingest, wiki-index, wiki-sync]
+    config:
+      - key: mimir.config_path
+        description: "Chemin du wiki.config.json (sinon auto-découverte : MIMIR_CONFIG → ~/.config/mimir → ./)"
+        default: "~/.config/mimir/wiki.config.json"
+        prompt: Emplacement du wiki.config.json
+      - key: mimir.work_root
+        description: Racine unique du second cerveau (vault complet ou sous-répertoire dédié)
+        default: ""
+        prompt: Racine de travail (work_root)
+      - key: mimir.sync.backend
+        description: Backend de synchronisation du vault (rclone | git)
+        default: rclone
+        prompt: Backend de synchro
 ---
 
 # wiki-reading-grid
@@ -34,8 +49,12 @@ La grille **ordonne des liens** — elle ne duplique **aucun** contenu. Elle cro
   chapitre `order=K`.
 
 ```sh
-python scripts/wiki_reading_grid.py --config <wiki.config.json> <generate|generate-all> …
+python scripts/wiki_reading_grid.py <generate|generate-all> …
 ```
+
+> `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
+> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
+> ci-dessous montrent `--config CFG` à titre indicatif ; il peut être omis.
 
 ## Procédure
 

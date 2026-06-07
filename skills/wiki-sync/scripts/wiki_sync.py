@@ -126,12 +126,16 @@ _COMMANDS = {
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Synchronisation pluggable du vault (Mimir).")
-    parser.add_argument("--config", required=True, help="Chemin du wiki.config.json")
+    parser.add_argument(
+        "--config", default=None,
+        help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
+             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+    )
     parser.add_argument("command", choices=sorted(_COMMANDS), help="Opération de synchro")
     parser.add_argument("--dry-run", action="store_true", help="`sync` : pull+validate sans push")
     args = parser.parse_args(argv)
 
-    cfg = config_loader.load_config(args.config)
+    cfg = config_loader.load_resolved_config(args.config)
     if args.command == "sync":
         return cmd_sync(cfg, dry_run=args.dry_run)
     return _COMMANDS[args.command](cfg)

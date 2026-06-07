@@ -45,6 +45,9 @@ assets:
 # Synchro planifiée — cron SELF-CONTAINED (chemins absolus, commande inline,
 # aucune dépendance au chargement d'une autre skill ; sessions cron sans cwd,
 # SPEC §12.7). Adapter le chemin du dépôt cloné des skills au déploiement réel.
+# NB : on garde `--config <chemin absolu>` EXPLICITE ici (par sécurité) car le
+# cron n'a pas de cwd garanti ; l'auto-découverte ($MIMIR_CONFIG → ~/.config/mimir
+# → ./) sert surtout les appels agent/manuels. Le config.yaml exporte MIMIR_CONFIG.
 cron:
   - name: wiki-sync-pull-push
     schedule: "*/30 * * * *"   # toutes les 30 min

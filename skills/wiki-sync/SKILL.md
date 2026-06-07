@@ -7,11 +7,26 @@ description: >
   Périmètre strictement borné à work_root (confinement) ; verrou hors zone synchronisée.
 license: Proprietary
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, sync, rclone, git]
   hermes:
     profile: wiki-curator
+    category: knowledge-management
+    related_skills: [wiki-extract, wiki-ingest, wiki-reading-grid, wiki-index]
+    config:
+      - key: mimir.config_path
+        description: "Chemin du wiki.config.json (sinon auto-découverte : MIMIR_CONFIG → ~/.config/mimir → ./)"
+        default: "~/.config/mimir/wiki.config.json"
+        prompt: Emplacement du wiki.config.json
+      - key: mimir.work_root
+        description: Racine unique du second cerveau (vault complet ou sous-répertoire dédié)
+        default: ""
+        prompt: Racine de travail (work_root)
+      - key: mimir.sync.backend
+        description: Backend de synchronisation du vault (rclone | git)
+        default: rclone
+        prompt: Backend de synchro
 ---
 
 # wiki-sync
@@ -31,8 +46,11 @@ Le moteur vit dans le socle partagé `_shared-references/scripts/sync/` (package
 par tous les skills via `import sync`). Ce skill n'expose qu'un **CLI mince** par-dessus :
 
 ```
-wiki_sync.py --config <wiki.config.json> {lock|pull|push|validate|sync} [--dry-run]
+wiki_sync.py [--config <wiki.config.json>] {lock|pull|push|validate|sync} [--dry-run]
 ```
+
+> `--config` est **optionnel** : sans lui, le config est auto-découvert dans l'ordre
+> `$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`.
 
 Backend choisi par `sync.backend` du config (`rclone` | `git`). **Sans clé `sync`**, le
 backend `noop` est utilisé (travail local, « contenu d'abord, synchro ensuite »).

@@ -7,11 +7,26 @@ description: >
   la carte des sujets ». Lecture seule pour l'audit ; écritures bornées à work_root.
 license: Proprietary
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, index, audit]
   hermes:
     profile: wiki-curator
+    category: knowledge-management
+    related_skills: [wiki-extract, wiki-ingest, wiki-reading-grid, wiki-sync]
+    config:
+      - key: mimir.config_path
+        description: "Chemin du wiki.config.json (sinon auto-découverte : MIMIR_CONFIG → ~/.config/mimir → ./)"
+        default: "~/.config/mimir/wiki.config.json"
+        prompt: Emplacement du wiki.config.json
+      - key: mimir.work_root
+        description: Racine unique du second cerveau (vault complet ou sous-répertoire dédié)
+        default: ""
+        prompt: Racine de travail (work_root)
+      - key: mimir.sync.backend
+        description: Backend de synchronisation du vault (rclone | git)
+        default: rclone
+        prompt: Backend de synchro
 ---
 
 # wiki-index
@@ -27,8 +42,12 @@ index », « audite les liens », « mets à jour la carte des sujets ».
 Skill **100 % déterministe** : il n'y a **rien à rédiger**, tu enchaînes des sous-commandes.
 
 ```sh
-python scripts/wiki_index.py --config <wiki.config.json> <regenerate|audit> …
+python scripts/wiki_index.py <regenerate|audit> …
 ```
+
+> `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
+> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
+> ci-dessous montrent `--config CFG` à titre indicatif ; il peut être omis.
 
 ## Procédure
 

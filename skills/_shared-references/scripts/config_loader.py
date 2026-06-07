@@ -48,6 +48,17 @@ ASSETS_DIRNAME = "_assets"
 
 VALID_BACKENDS = {"rclone", "git"}
 
+#: Variable d'environnement pointant le `wiki.config.json` actif (cf. MIMIR_SHARED).
+ENV_CONFIG = "MIMIR_CONFIG"
+
+#: Emplacement par défaut (standard XDG). Calculé à la volée dans le resolver
+#: (jamais figé à l'import) pour rester sensible à un HOME surchargé (tests).
+_XDG_DEFAULT = "~/.config/mimir/wiki.config.json"
+
+#: Nom recherché dans le répertoire courant (dernier recours ; peu fiable en cron
+#: sans cwd garanti — §12.7 — d'où la priorité donnée à ENV_CONFIG puis XDG).
+_CWD_CONFIG_NAME = "wiki.config.json"
+
 
 class ConfigError(ValueError):
     """Config absente, illisible, ou non conforme."""
@@ -131,6 +142,56 @@ def _validate(raw: dict[str, Any]) -> None:
         raise ConfigError(f"`sync.backend` invalide : {backend!r} (attendu : {VALID_BACKENDS}).")
 
 
+def resolve_config_path(explicit: str | os.PathLike[str] | None = None) -> Path:
+    """Localise le `wiki.config.json` à utiliser, sans le charger.
+
+    « Configurer une fois, appeler sans `--config` » : si aucun chemin explicite
+    n'est fourni, on cherche le premier emplacement **existant** dans l'ordre :
+
+    1. ``$MIMIR_CONFIG`` (variable d'environnement) ;
+    2. ``~/.config/mimir/wiki.config.json`` (standard XDG) ;
+    3. ``./wiki.config.json`` (répertoire courant — peu fiable en cron, §12.7).
+
+    Un ``explicit`` fourni court-circuite la recherche et est renvoyé tel quel
+    (résolu en absolu) **sans vérifier son existence** : c'est `load_config` qui
+    lèvera l'erreur « Config introuvable » habituelle, comportement déjà testé.
+
+    Un ``$MIMIR_CONFIG`` défini mais pointant un fichier absent est **toléré** :
+    on passe au candidat suivant (XDG puis cwd) plutôt que d'échouer sec.
+    """
+    if explicit is not None:
+        return Path(os.path.expanduser(os.fspath(explicit))).resolve()
+
+    env_value = os.environ.get(ENV_CONFIG)
+    candidates: list[Path] = []
+    if env_value:
+        candidates.append(Path(os.path.expanduser(env_value)))
+    candidates.append(Path(os.path.expanduser(_XDG_DEFAULT)))
+    candidates.append(Path.cwd() / _CWD_CONFIG_NAME)
+
+    for cand in candidates:
+        if cand.is_file():
+            return cand.resolve()
+
+    raise ConfigError(
+        "Aucun wiki.config.json trouvé. Emplacements cherchés (dans l'ordre) :\n"
+        f"  1. ${ENV_CONFIG} ({env_value or 'non défini'})\n"
+        f"  2. {os.path.expanduser(_XDG_DEFAULT)}\n"
+        f"  3. ./{_CWD_CONFIG_NAME}  (cwd actuel : {Path.cwd()})\n"
+        f"Configurez l'un de ces emplacements, ou passez --config <chemin>.\n"
+        f"Exemple : export {ENV_CONFIG}=/chemin/vers/wiki.config.json"
+    )
+
+
+def load_resolved_config(explicit: str | os.PathLike[str] | None = None) -> Config:
+    """Résout l'emplacement (auto-découverte si `explicit` absent) puis charge.
+
+    Point d'entrée des skills : ``load_resolved_config(args.config)`` où
+    ``args.config`` vaut ``None`` quand l'utilisateur n'a pas passé ``--config``.
+    """
+    return load_config(resolve_config_path(explicit))
+
+
 def load_config(config_path: str | os.PathLike[str]) -> Config:
     """Charge et valide un `wiki.config.json`, renvoie une `Config` résolue."""
     path = Path(os.path.expanduser(os.fspath(config_path))).resolve()
@@ -164,9 +225,18 @@ def load_config(config_path: str | os.PathLike[str]) -> Config:
 if __name__ == "__main__":  # diagnostic
     import sys
 
-    if len(sys.argv) != 2:
-        print("Usage: config_loader.py <wiki.config.json>", file=sys.stderr)
+    # Usage : config_loader.py [<wiki.config.json>]
+    # Sans argument → auto-découverte ($MIMIR_CONFIG → ~/.config/mimir → ./).
+    if len(sys.argv) > 2:
+        print("Usage: config_loader.py [<wiki.config.json>]", file=sys.stderr)
         raise SystemExit(2)
-    cfg = load_config(sys.argv[1])
+    explicit = sys.argv[1] if len(sys.argv) == 2 else None
+    try:
+        path = resolve_config_path(explicit)
+        cfg = load_config(path)
+    except ConfigError as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1)
+    print(f"CONFIG_PATH={path}")
     for key, value in cfg.as_dict().items():
         print(f"{key}={value}")

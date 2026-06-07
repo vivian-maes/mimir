@@ -8,8 +8,30 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
+## [0.3.0] — non publié
+
+> Configuration « zéro friction » : on configure **une fois**, on appelle les
+> skills **sans** `--config`. Exposition au Skills Hub d'Hermes (regroupement +
+> bouton config) et install groupée par le profil mise en avant.
+
+### Added
+
+- **Auto-découverte du `wiki.config.json`.** `--config` devient **optionnel** sur
+  les 5 skills. Quand il est omis, le config est résolu dans l'ordre
+  `$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` (XDG) → `./wiki.config.json`
+  (`config_loader.resolve_config_path` / `load_resolved_config`). Message d'erreur
+  actionnable si rien n'est trouvé. Plus besoin de répéter le chemin à chaque appel.
+- **Skills Hub.** Frontmatters enrichis (`metadata.hermes.category`,
+  `related_skills`, `config`) → les 5 skills apparaissent comme un **ensemble**
+  avec un **bouton config**. Nouveau `skills.sh.json` (catégorie « Mimir — Second
+  cerveau »), ajouté à l'allow-list de publication.
+
 ### Changed
 
+- **Profil = voie d'install groupée recommandée.** `hermes profile install …#profiles/wiki-curator`
+  (les 5 skills + config + cron d'un coup) mis en avant dans les runbooks ; le
+  `config.yaml` du profil exporte `MIMIR_CONFIG` (appels sans `--config`). Le cron
+  garde `--config` explicite (sessions sans `cwd`).
 - **CI tag-only.** Plus aucun pipeline hors tag (`workflow.rules` + suppression
   du job de validation au push) : la validation (frontmatters + 159 tests) et la
   publication ne tournent qu'au tag.
@@ -118,5 +140,5 @@ suivent la même version (bump synchronisé).
 - Les trois copies dupliquées de `sync_stub.py` (`wiki-ingest`, `wiki-reading-grid`,
   `wiki-index`) et `wiki-extract/inbox_lock.py` — remplacées par le moteur partagé `sync/`.
 
-[Unreleased]: https://github.com/vivianmaes/mimir/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/vivianmaes/mimir/releases/tag/v0.2.0
+[Unreleased]: https://github.com/vivian-maes/mimir/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vivian-maes/mimir/releases/tag/v0.2.0

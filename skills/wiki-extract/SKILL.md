@@ -7,11 +7,26 @@ description: >
   source », « clippe cette page ». N'écrit que dans raw/ (confinement).
 license: Proprietary
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, extraction, pdf, epub, ocr, scraping]
   hermes:
     profile: wiki-curator
+    category: knowledge-management
+    related_skills: [wiki-ingest, wiki-reading-grid, wiki-index, wiki-sync]
+    config:
+      - key: mimir.config_path
+        description: "Chemin du wiki.config.json (sinon auto-découverte : MIMIR_CONFIG → ~/.config/mimir → ./)"
+        default: "~/.config/mimir/wiki.config.json"
+        prompt: Emplacement du wiki.config.json
+      - key: mimir.work_root
+        description: Racine unique du second cerveau (vault complet ou sous-répertoire dédié)
+        default: ""
+        prompt: Racine de travail (work_root)
+      - key: mimir.sync.backend
+        description: Backend de synchronisation du vault (rclone | git)
+        default: rclone
+        prompt: Backend de synchro
 ---
 
 # wiki-extract
@@ -26,8 +41,11 @@ d'être déplacés vers `raw/<type>/`.
 ## Usage
 
 ```sh
-python scripts/wiki_extract.py --config <wiki.config.json> [SOURCE] [--lang fra+eng] [--dry-run]
+python scripts/wiki_extract.py [SOURCE] [--lang fra+eng] [--dry-run]
 ```
+
+> `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
+> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`).
 
 - **SOURCE absent** → scan de `_inbox/` (mode cron/curator) : tous les binaires déposés sont traités.
 - **SOURCE = chemin `.pdf`/`.epub`** → extraction de ce binaire.

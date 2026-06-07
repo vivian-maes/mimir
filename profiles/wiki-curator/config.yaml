@@ -16,7 +16,12 @@ skills:
 mimir:
   config: /chemin/absolu/vers/wiki.config.json
 
-# Jeton GitHub pour le tap (anti rate-limit : 5 000 req/h au lieu de 60).
-# À placer plutôt dans ~/.hermes/.env que versionné. Scope : public_repo.
-# env:
-#   GITHUB_TOKEN: "ghp_xxx"
+# Variables d'environnement exportées à l'agent ET à ses skills/cron.
+# MIMIR_CONFIG active l'auto-découverte : les 5 skills n'ont alors PLUS besoin de
+# --config (résolution : $MIMIR_CONFIG → ~/.config/mimir/wiki.config.json → ./).
+# Garder cette valeur cohérente avec mimir.config ci-dessus (même chemin).
+env:
+  MIMIR_CONFIG: /chemin/absolu/vers/wiki.config.json
+  # Jeton GitHub pour le tap (anti rate-limit : 5 000 req/h au lieu de 60).
+  # À placer plutôt dans ~/.hermes/.env que versionné. Scope : public_repo.
+  # GITHUB_TOKEN: "ghp_xxx"

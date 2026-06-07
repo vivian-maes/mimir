@@ -59,7 +59,11 @@ def cmd_audit(cfg):
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Index + audit liens du wiki (Mimir).")
-    parser.add_argument("--config", required=True, help="Chemin du wiki.config.json")
+    parser.add_argument(
+        "--config", default=None,
+        help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
+             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p_reg = sub.add_parser("regenerate", help="Reconstruit INDEX.md + <sujet>/_INDEX.md.")
@@ -70,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     p_aud.add_argument("--json", action="store_true", help="Rapport machine (JSON).")
 
     args = parser.parse_args(argv)
-    cfg = config_loader.load_config(args.config)
+    cfg = config_loader.load_resolved_config(args.config)
 
     if args.cmd == "regenerate":
         res = cmd_regenerate(cfg, skip_sync=args.skip_sync, dry_run=args.dry_run)

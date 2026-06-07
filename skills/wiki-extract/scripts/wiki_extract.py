@@ -260,14 +260,18 @@ def _digest(outcomes: list[Outcome]) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Extraction de sources vers raw/ (Mimir).")
-    parser.add_argument("--config", required=True, help="Chemin du wiki.config.json")
+    parser.add_argument(
+        "--config", default=None,
+        help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
+             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+    )
     parser.add_argument("source", nargs="?", help="Chemin .pdf/.epub ou URL ; absent = scan _inbox/")
     parser.add_argument("--lang", default="fra+eng", help="Langue(s) OCR (défaut: fra+eng)")
     parser.add_argument("--dry-run", action="store_true", help="N'écrit rien ; rapporte l'intention")
     parser.add_argument("--skip-sync", action="store_true", help="Court-circuite pull/push (travail local)")
     args = parser.parse_args(argv)
 
-    cfg = config_loader.load_config(args.config)
+    cfg = config_loader.load_resolved_config(args.config)
     outcomes = run(cfg, args.source, lang=args.lang, dry_run=args.dry_run, skip_sync=args.skip_sync)
     print(_digest(outcomes))
     return 1 if any(o.status == "error" for o in outcomes) else 0
