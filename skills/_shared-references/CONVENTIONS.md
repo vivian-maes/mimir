@@ -1,6 +1,6 @@
 # Conventions partagées — Mimir
 
-> Socle commun aux 5 skills `wiki-*`. Source de vérité : [`SPEC.md`](../../SPEC.md) (v0.6).
+> Socle commun aux 5 skills `wiki-*`. Source de vérité : [`SPEC.md`](../../__projet__/SPEC.md) (v0.6).
 > Ce fichier mutualise les conventions pour éviter le gonflement des `SKILL.md`.
 
 ---

@@ -8,7 +8,25 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
-## [0.3.0] — non publié
+## [0.3.1] - 2026-06-07
+
+### Fixed
+
+- **`hermes profile install` réparé.** Le manifest `distribution.yaml` est déplacé
+  de `profiles/wiki-curator/` vers la **racine du repo** (requis : `profile install`
+  ne supporte pas la syntaxe `#sous-dossier` et cherche le manifest à la racine).
+  Chemins `soul`/`config` → `profiles/wiki-curator/`, `assets` → racine. Ajouté à
+  l'allow-list de publication. Commande : `hermes profile install https://github.com/vivian-maes/mimir.git`.
+
+### Changed
+
+- **Réorganisation : gestion de projet sous `__projet__/`.** `ROADMAP.md`,
+  `BACKLOG.md`, `SPEC.md` et les dossiers `_analyse_DevOps/`, `_old-kb-mimir-skills/`
+  sont regroupés sous `__projet__/` (jamais publié — ajouté au garde-fou anti-fuite).
+  Racine allégée ; artefacts publiés (README, CHANGELOG, VERSION, LICENSE, configs,
+  `distribution.yaml`, `skills.sh.json`) conservés à la racine. Liens internes mis à jour.
+
+## [0.3.0] - 2026-06-07
 
 > Configuration « zéro friction » : on configure **une fois**, on appelle les
 > skills **sans** `--config`. Exposition au Skills Hub d'Hermes (regroupement +
@@ -28,10 +46,12 @@ suivent la même version (bump synchronisé).
 
 ### Changed
 
-- **Profil = voie d'install groupée recommandée.** `hermes profile install …#profiles/wiki-curator`
-  (les 5 skills + config + cron d'un coup) mis en avant dans les runbooks ; le
-  `config.yaml` du profil exporte `MIMIR_CONFIG` (appels sans `--config`). Le cron
-  garde `--config` explicite (sessions sans `cwd`).
+- **Profil = voie d'install groupée recommandée.** `hermes profile install https://github.com/vivian-maes/mimir.git`
+  (les 5 skills + config + cron d'un coup) mis en avant dans les runbooks. Le
+  manifest **`distribution.yaml` est à la racine** du repo (requis par
+  `profile install` ; pas de syntaxe `#sous-dossier`) ; `SOUL.md` + `config.yaml`
+  restent sous `profiles/wiki-curator/`. Le `config.yaml` exporte `MIMIR_CONFIG`
+  (appels sans `--config`) ; le cron garde `--config` explicite (sessions sans `cwd`).
 - **CI tag-only.** Plus aucun pipeline hors tag (`workflow.rules` + suppression
   du job de validation au push) : la validation (frontmatters + 159 tests) et la
   publication ne tournent qu'au tag.

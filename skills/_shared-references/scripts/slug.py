@@ -9,7 +9,7 @@ Conventions Mimir (SPEC §12.2, §12.3) :
   que les wikilinks Obsidian sont en **NFC** (accents composés) : comparer deux
   chemins sans normaliser produit de faux « liens morts ». `same_file()` règle ça.
 
-Évolution de `slugify()` (`_old-kb-mimir-skills/kb-pdf-extract/scripts/`), corrigé
+Évolution de `slugify()` (`__projet__/_old-kb-mimir-skills/kb-pdf-extract/scripts/`), corrigé
 pour produire réellement de l'ASCII (l'ancienne version gardait les accents, `\\w`
 étant Unicode par défaut en Python 3).
 """

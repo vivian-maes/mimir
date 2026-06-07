@@ -1,6 +1,6 @@
 # Gabarits de frontmatter & formats — Mimir
 
-> Référence des en-têtes YAML et sidecars. Source : [`SPEC.md`](../../SPEC.md) §4–§8.
+> Référence des en-têtes YAML et sidecars. Source : [`SPEC.md`](../../__projet__/SPEC.md) §4–§8.
 
 ---
 
