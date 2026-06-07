@@ -1,25 +1,29 @@
 # Manifest du profil Hermes « mimir » — COUCHE 2 (opt-in, jamais requise).
 #
-# Format : manifest PLAT (name/version/description/author/files) à la RACINE du
-# repo. `hermes profile install <git-url>` clone le repo, lit ce fichier, et
-# COPIE les chemins de `files:` dans ~/.hermes/profiles/mimir/.
-# C'est pourquoi SOUL.md et config.yaml vivent à la racine : ils doivent atterrir
-# à la racine du dossier de profil.
+# Schéma OFFICIEL Hermes (website/docs/user-guide/profile-distributions.md) :
+#   name (requis), version, description, author, license, hermes_requires,
+#   env_requires[], distribution_owned[].
+# `hermes profile install <git-url>` clone le repo et COPIE TOUT le repo dans
+# ~/.hermes/profiles/mimir/ (sauf .env, auth.json, memories/, sessions/).
+# → il n'y a PAS de clé `files:` ; tout ce qui est à la racine du repo est copié
+#   (SOUL.md, config.yaml, skills/, etc. doivent donc vivre à la racine).
 #
 #   hermes profile install https://github.com/vivian-maes/mimir.git
 #   hermes -p mimir chat
 #
-# Réf. __projet__/SPEC.md §11 ; __projet__/_analyse_DevOps/hermes-sous-agents-vs-skills.md.
+# Modèle/LLM : NON défini ici — le profil hérite du modèle du profil par défaut
+# (sinon `mimir setup`). Gateway & cron de synchro : voir backlog (v0.4.0).
+# Réf. __projet__/SPEC.md §11.
 
 name: mimir
-version: "0.3.3"
+version: "0.3.4"
 description: "Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) : extrait des sources, compile par notion, indexe et synchronise."
 author: Vivian MAES
+license: Proprietary
 
-# Fichiers copiés dans le dossier du profil (relatifs à la racine du repo).
-files:
-  - SOUL.md                    # persona (identité persistante)
-  - config.yaml                # config de l'agent (external_dirs, MIMIR_CONFIG)
-  - skills/                    # les 5 skills wiki-* + _shared-references
-  - filters.txt                # template d'exclusions rclone
-  - wiki.config.example.json   # exemple de wiki.config.json
+# Fichiers « possédés » par la distribution : remplacés à chaque mise à jour
+# (le reste du repo copié est préservé s'il a été modifié localement).
+distribution_owned:
+  - SOUL.md
+  - config.yaml
+  - skills/
