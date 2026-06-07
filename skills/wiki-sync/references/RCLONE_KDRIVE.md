@@ -12,8 +12,10 @@
   seule comparaison viable.
 - **Verrou hors zone synchronisée** (`~/.cache/mimir/wiki-sync.lock`) : sinon il se
   synchronise et le verrou d'une machine bloque les autres.
-- **Jamais `--resync` automatique** en session cron : c'est un acte manuel, ponctuel, qui
-  désigne un côté comme vérité.
+- **`--resync` non automatique par défaut** : sans état antérieur, le backend bascule sur un
+  bootstrap unidirectionnel et signale qu'un `--resync` manuel est requis. Pour s'amorcer
+  seul (machine distante, agent piloté par le JSON), poser `sync.rclone.auto_resync: true`
+  (cf. « Amorçage automatique » plus bas).
 
 ## Commande bisync (pull/push)
 
@@ -37,7 +39,43 @@ rclone sync <local> <remote> --size-only --copy-links --filter-from filters.txt
 ```
 
 puis **signale** (warning) qu'un `rclone bisync --resync` manuel doit être lancé pour
-établir proprement l'état bisync. Le backend ne lance jamais `--resync` lui-même.
+établir proprement l'état bisync.
+
+### Amorçage automatique (opt-in)
+
+Avec `sync.rclone.auto_resync: true`, le backend amorce lui-même l'état bisync sur ce cas :
+il lance `rclone bisync … --resync` (mêmes flags que la passe normale, **plus** `--resync`).
+On ne passe **pas** de `--resync-mode` : `--conflict-loser pathname --conflict-suffix
+sync-conflict` reste actif, donc un fichier divergent des deux côtés produit **deux copies**
+(union sans perte) au lieu d'un écrasement silencieux. Si le `--resync` échoue, le backend
+retombe sur le bootstrap unidirectionnel ci-dessus (filet de sécurité). C'est le réglage
+attendu quand l'agent doit « se débrouiller seul depuis le JSON » sans rclone manuel.
+
+### Auth pilotée par le JSON (opt-in)
+
+Avec `sync.rclone.remote_setup`, le backend crée/répare le remote rclone **avant** la synchro,
+sans `rclone config` manuel :
+
+```jsonc
+"remote_setup": {
+  "url": "https://connect.drive.infomaniak.com/<id>/<dossier>",
+  "vendor": "other",
+  "user": "<login kDrive>",
+  "pass_env": "MIMIR_KDRIVE_PASS"   // NOM de la variable d'env, pas le mot de passe
+}
+```
+
+- Le **mot de passe d'application kDrive n'est jamais dans le JSON** : `pass_env` nomme la
+  variable d'environnement qui le porte (à poser dans le `.env` du profil Hermes, exclu des
+  fichiers « possédés » par `distribution.yaml`, donc jamais écrasé par `hermes update`).
+- Remote absent ⇒ `rclone config create … webdav … --obscure` ; remote présent ⇒ `rclone
+  config update … pass … --obscure` → **rafraîchit le secret et répare un 401** au run suivant.
+- Si la variable d'env est absente, le backend n'écrit rien et émet un warning (la synchro
+  peut alors échouer en 401) — il ne plante pas pour autant.
+- **Caveat secret** : le mot de passe transite en clair par `argv` de `rclone config` (bref
+  passage dans la table des process). Le backend ne le journalise jamais. Variante « zéro
+  écriture » possible hors backend : définir le remote par variables `RCLONE_CONFIG_<NOM>_*`
+  plutôt que muter `rclone.conf`.
 
 > **Piège — cohérence du chemin.** L'état bisync est indexé par rclone sur le **chemin
 > absolu** des deux côtés. Le backend utilise `cfg.work_root`, que `config_loader` **résout
@@ -69,6 +107,9 @@ ligne d'exclusion **avant** le prochain sync, sinon rclone propage la corbeille 
 
 ## Pré-requis (setup machine, une fois)
 
-- Remote `rclone config` (type `webdav`, vendor `other`, URL + mot de passe d'application kDrive).
-- `--resync` initial manuel pour établir l'état bisync.
+- Remote `rclone config` (type `webdav`, vendor `other`, URL + mot de passe d'application
+  kDrive) — **ou** `sync.rclone.remote_setup` + le secret en variable d'env, et l'agent le
+  configure seul (cf. « Auth pilotée par le JSON »).
+- `--resync` initial manuel pour établir l'état bisync — **ou** `sync.rclone.auto_resync:
+  true` pour l'amorçage automatique.
 - Un seul synchroniseur par machine (désactiver l'auto-sync Remotely Save d'Obsidian).

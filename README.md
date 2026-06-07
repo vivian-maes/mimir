@@ -48,6 +48,36 @@ tire. Mimir fait le pont entre les deux, en continu.
 - Un outil qu'il faut nourrir et ranger à la main.
 - Une connaissance figée, qu'on n'ose plus retoucher.
 
+## Installation
+
+> Pré-requis : [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+> installé. Détail complet des étapes :
+> [`__projet__/_analyse_DevOps/RUNBOOK_VALIDATION_HERMES.md`](./__projet__/_analyse_DevOps/RUNBOOK_VALIDATION_HERMES.md).
+
+```bash
+hermes profile install https://github.com/vivian-maes/mimir.git
+hermes update     # ⚠️ seede les skills de base : sans ça, le profil n'a que les 5 wiki-*
+```
+
+Au **premier lancement**, sur un Hermes encore non configuré :
+
+```bash
+hermes -p mimir chat     # déclenche l'assistant « hermes setup »
+```
+
+L'assistant configure le **provider** (login Nous Portal ou clés API d'un autre
+fournisseur), le terminal, et — optionnellement — la **messagerie** (bot Telegram +
+service gateway). On peut passer une étape et y revenir avec
+`hermes -p mimir setup model`, `hermes -p mimir setup gateway`, etc.
+
+Enfin, déposer `wiki.config.json` dans `~/.hermes/profiles/mimir/` (auto-découvert) et
+vérifier : `hermes profile info mimir`.
+
+> **Invocation** : toujours via le flag `-p` — `hermes -p mimir <commande>`.
+> ⚠️ `hermes mimir chat` est invalide (`mimir` est un **profil**, pas une
+> sous-commande de `hermes`). Le raccourci `mimir <commande>` n'existe que si on
+> installe avec `--alias`.
+
 ## Où on en est
 
 Tout est devant nous. Cette page pose **le cap**. Le reste — comment Mimir

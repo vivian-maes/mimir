@@ -4,7 +4,8 @@
 # du runtime Hermes ou d'une étape post-install. On ne déclare donc rien ici :
 #
 #   • Modèle / LLM : HÉRITÉ du profil par défaut (absence de bloc `model:`).
-#     Sinon `mimir setup` ou `hermes model` + clé API dans ~/.hermes/profiles/mimir/.env.
+#     Sinon `hermes -p mimir setup` ou `hermes -p mimir model` + clé API dans
+#     ~/.hermes/profiles/mimir/.env.
 #   • Outils de base (fichiers, web, terminal) et délégation : fournis par le
 #     runtime Hermes — rien à déclarer.
 #   • Bundled skills de base : ATTENTION — `hermes profile install` ne copie QUE les

@@ -77,6 +77,91 @@ def test_echec_bisync_non_resync_propage(cfg):
     assert runner.subcommands() == ["bisync"]        # aucun fallback
 
 
+# --- amorçage automatique (--resync, opt-in) -------------------------------
+_RESYNC_ERR = "Bisync critical error: Must run --resync to recover."
+
+
+def _enable(cfg, **opts):
+    cfg.sync["rclone"].update(opts)
+    return cfg
+
+
+def test_auto_resync_amorce_si_active(cfg):
+    _enable(cfg, auto_resync=True)
+    runner = FakeRunner({"bisync": [(1, "", _RESYNC_ERR), (0, "", "")]})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert runner.subcommands() == ["bisync", "bisync"]   # bisync échoue puis bisync --resync
+    assert "--resync" in runner.calls[1]
+    assert backend.warnings and "automatiquement" in backend.warnings[0].lower()
+
+
+def test_auto_resync_off_garde_le_repli(cfg):
+    # auto_resync absent => comportement historique (non-régression)
+    runner = FakeRunner({"bisync": (1, "", _RESYNC_ERR), "sync": (0, "", "")})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.push() == 0
+    assert runner.subcommands() == ["bisync", "sync"]
+    assert backend.warnings and "manuel" in backend.warnings[0].lower()
+
+
+def test_resync_echoue_retombe_sur_bootstrap(cfg):
+    _enable(cfg, auto_resync=True)
+    runner = FakeRunner({
+        "bisync": [(1, "", _RESYNC_ERR), (5, "", "resync boom")],
+        "sync": (0, "", ""),
+    })
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert runner.subcommands() == ["bisync", "bisync", "sync"]  # filet de sécurité
+    assert backend.warnings and "manuel" in backend.warnings[-1].lower()
+
+
+# --- auth : (re)configuration du remote depuis le JSON+env -----------------
+_SETUP = {"url": "https://dav/x", "vendor": "other", "user": "u", "pass_env": "MIMIR_KDRIVE_PASS"}
+
+
+def test_ensure_remote_cree_si_absent(cfg, monkeypatch):
+    monkeypatch.setenv("MIMIR_KDRIVE_PASS", "s3cret")
+    _enable(cfg, remote_setup=_SETUP)
+    runner = FakeRunner({"listremotes": (0, "autre:\n", ""), "bisync": (0, "", "")})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert runner.subcommands()[:2] == ["listremotes", "config"]
+    cfg_call = runner.calls[1]
+    assert cfg_call[1:3] == ["config", "create"] and "mimir" in cfg_call
+    assert "--obscure" in cfg_call
+    # le secret transite par argv mais n'est jamais relayé dans un warning/log
+    assert not any("s3cret" in w for w in backend.warnings)
+
+
+def test_ensure_remote_update_si_present(cfg, monkeypatch):
+    monkeypatch.setenv("MIMIR_KDRIVE_PASS", "s3cret")
+    _enable(cfg, remote_setup=_SETUP)
+    runner = FakeRunner({"listremotes": (0, "mimir:\n", ""), "bisync": (0, "", "")})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert runner.calls[1][1:3] == ["config", "update"]   # remote présent => répare le 401
+
+
+def test_ensure_remote_sans_pass_env_warn_et_continue(cfg, monkeypatch):
+    monkeypatch.delenv("MIMIR_KDRIVE_PASS", raising=False)
+    _enable(cfg, remote_setup=_SETUP)
+    runner = FakeRunner({"bisync": (0, "", "")})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert "config" not in runner.subcommands()           # aucune mutation rclone
+    assert backend.warnings and "401" in backend.warnings[0]
+
+
+def test_ensure_remote_absent_skip(cfg):
+    # pas de remote_setup => aucune commande config/listremotes (comportement historique)
+    runner = FakeRunner({"bisync": (0, "", "")})
+    backend = RcloneBackend(cfg, runner=runner)
+    assert backend.pull() == 0
+    assert runner.subcommands() == ["bisync"]
+
+
 def test_validate_ok_quand_comptage_proche(cfg, tmp_path):
     (tmp_path / "a.md").write_text("x", encoding="utf-8")
     (tmp_path / "b.md").write_text("y", encoding="utf-8")

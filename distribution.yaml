@@ -12,11 +12,11 @@
 #   hermes -p mimir chat
 #
 # Modèle/LLM : NON défini ici — le profil hérite du modèle du profil par défaut
-# (sinon `mimir setup`). Gateway & cron de synchro : voir backlog (v0.4.0).
-# Réf. __projet__/SPEC.md §11.
+# (sinon `hermes -p mimir setup`). Gateway : service installé au 1er `hermes setup` ;
+# cron de synchro : voir backlog (v0.5.0). Réf. __projet__/SPEC.md §11.
 
 name: mimir
-version: "0.3.5"
+version: "0.4.0"
 description: "Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) : extrait des sources, compile par notion, indexe et synchronise."
 author: Vivian MAES
 license: Proprietary

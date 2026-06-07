@@ -7,7 +7,7 @@ description: >
   sources », « décompose ce PDF en articles ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.3.5"
+  version: "0.4.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, karpathy, ingestion]
   hermes:

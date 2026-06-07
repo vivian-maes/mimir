@@ -12,7 +12,14 @@
     "rclone": {
       "remote": "mimir-vault:Vault/02 - second cerveau",
       "filters": "filters.txt",
-      "lock_dir": "~/.cache/mimir/wiki-sync.lock"
+      "lock_dir": "~/.cache/mimir/wiki-sync.lock",
+      "auto_resync": true,
+      "remote_setup": {
+        "url": "https://connect.drive.infomaniak.com/<id>/<dossier>",
+        "vendor": "other",
+        "user": "<login kDrive>",
+        "pass_env": "MIMIR_KDRIVE_PASS"
+      }
     },
     "git": {
       "repo_root": "/chemin/vers/votre/Vault",

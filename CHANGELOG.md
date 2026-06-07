@@ -8,10 +8,49 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-07
+
+### Added
+
+- **Synchro kDrive auto-amorçable depuis le JSON (`wiki-sync` / backend rclone).** Deux
+  clés optionnelles dans `sync.rclone` (rétro-compatibles, défaut = comportement actuel
+  inchangé) suppriment les actes `rclone` manuels sur une machine pilotée par config :
+  - **`auto_resync`** : sans état bisync antérieur (« Must run --resync »), le backend
+    amorce lui-même via `bisync --resync` — **union sans perte** (pas de `--resync-mode` ;
+    `--conflict-suffix sync-conflict` conservé, donc un fichier divergent des deux côtés
+    produit deux copies au lieu d'un écrasement silencieux). Échec ⇒ repli sur le
+    bootstrap `rclone sync` unidirectionnel existant (filet de sécurité intact).
+  - **`remote_setup`** (`url` / `vendor` / `user` / `pass_env`) : crée/répare le remote
+    rclone (`config create` / `update --obscure`) **avant** la synchro ; le mot de passe
+    est lu dans la variable d'environnement nommée par `pass_env` (**jamais stocké dans le
+    JSON**), et un remote déjà présent voit son secret rafraîchi — **auto-réparation du
+    401**.
+  Schéma `wiki.config.schema.json` étendu, `wiki.config.example.json` + référence
+  `RCLONE_KDRIVE.md` documentés (dont le caveat « secret transmis via `argv` »), `filters.txt`
+  nettoyé (note perso mode A en exemple commenté). 7 tests hermétiques ajoutés (runner factice,
+  aucun binaire rclone requis).
+
 ## [0.3.5] - 2026-06-07
+
+### Added
+
+- **Documentation du premier lancement (`hermes setup`).** Section `## Installation`
+  au README + walkthrough complet de l'assistant au runbook §5 : provider (Nous
+  Portal / clés), terminal, réglages agent, messagerie Telegram (allowlist + home
+  channel), **service gateway launchd** `ai.hermes.gateway-mimir.plist`, et résumé des
+  outils (quelle clé débloque quelle catégorie).
 
 ### Fixed
 
+- **Invocation standardisée sur `hermes -p mimir <cmd>`.** Tous les `mimir <cmd>`
+  (qui supposaient un alias) convertis : `hermes profile install` **ne crée pas**
+  l'alias `~/.local/bin/mimir` sans `--alias`. Avertissement ajouté : `hermes mimir
+  chat` est invalide (`mimir` = profil, pas sous-commande).
+- **Gateway : plus « prévu en v0.4.0 ».** Son service launchd est installé/démarré dès
+  l'assistant `hermes setup` ; seule la synchro planifiée (cron) reste en v0.4.0.
+  Corrigé dans le runbook §5 et la SPEC §11.
+- **Modèle « hérité » nuancé.** L'héritage ne vaut que si le profil par défaut a déjà
+  un provider ; sinon le 1er `hermes -p mimir chat` lance `hermes setup`.
 - **Skills de base manquantes après `hermes profile install` (doc corrigée).**
   `hermes profile install` ne copie que les *distribution-owned files* (les 5
   wiki-*) — il **ne seede PAS** les bundled skills de base (seuls `hermes profile

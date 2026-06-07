@@ -51,6 +51,26 @@
             "lock_dir": {
               "type": "string",
               "description": "Dossier de verrou HORS zone synchronisée (vigilance §12.9)."
+            },
+            "auto_resync": {
+              "type": "boolean",
+              "default": false,
+              "description": "Opt-in : amorce l'état bisync via `--resync` (union sans perte) au lieu d'exiger un acte manuel (§10)."
+            },
+            "remote_setup": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Opt-in : crée/répare le remote rclone avant la synchro. Le secret n'est PAS ici (cf. pass_env).",
+              "required": ["url", "user", "pass_env"],
+              "properties": {
+                "url": { "type": "string", "description": "URL WebDAV kDrive." },
+                "vendor": { "type": "string", "default": "other" },
+                "user": { "type": "string", "description": "Login kDrive." },
+                "pass_env": {
+                  "type": "string",
+                  "description": "Nom de la variable d'environnement portant le mot de passe d'application (jamais dans le JSON)."
+                }
+              }
             }
           }
         },

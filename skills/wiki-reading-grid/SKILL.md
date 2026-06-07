@@ -7,7 +7,7 @@ description: >
   grille de lecture de cet ouvrage », « régénère la grille ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.3.5"
+  version: "0.4.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, reading-grid, navigation]
   hermes:

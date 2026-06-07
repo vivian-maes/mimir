@@ -1,12 +1,13 @@
 # Filtres rclone — exclusions de synchro (template ; à copier dans work_root).
 # Confinement : la synchro est bornée à work_root (SPEC §2/§10). Whitelist inversée
-# ('+ **' final). Adapter '01 - note personnelle/' au vault réel (mode A).
+# ('+ **' final).
+# Mode A (work_root = racine du vault) : ajouter ici les sous-dossiers persos à exclure,
+# p. ex.  - 01 - note personnelle/**  — inutile en mode B (work_root déjà borné au wiki).
 
 - .obsidian/**
 - .git/**
 - .wiki/**
 - _config_hermes/**
-- 01 - note personnelle/**
 - **/.DS_Store
 - **/.Trash-*/**
 - **/.rclone-bisync/**
