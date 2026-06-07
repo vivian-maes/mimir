@@ -27,9 +27,15 @@ def _make_config(path: Path) -> Path:
 
 
 @pytest.fixture(autouse=True)
-def _clean_env(monkeypatch):
-    """Part d'un environnement neutre : pas de MIMIR_CONFIG hérité de la CI."""
+def _clean_env(monkeypatch, tmp_path):
+    """Environnement neutre : pas de MIMIR_CONFIG hérité, et `_self_root` neutralisé.
+
+    `_self_root()` renvoie en vrai la racine du repo : un `wiki.config.json` y
+    traînant fausserait les tests. On le pointe par défaut vers un dossier vide ;
+    les tests qui veulent exercer ce candidat le re-monkeypatchent explicitement.
+    """
     monkeypatch.delenv(ENV_CONFIG, raising=False)
+    monkeypatch.setattr(config_loader, "_self_root", lambda: tmp_path / "no-self-root")
 
 
 def test_explicit_prioritaire_sur_tout(tmp_path, monkeypatch):
@@ -97,6 +103,41 @@ def test_ordre_xdg_avant_cwd(tmp_path, monkeypatch):
     assert resolve_config_path() == xdg.resolve()
 
 
+def test_racine_profil_si_pas_env(tmp_path, monkeypatch):
+    """Sans env : le wiki.config.json du dossier du profil/repo est découvert."""
+    profile = tmp_path / "profile"
+    cfg = _make_config(profile / "wiki.config.json")
+    monkeypatch.setattr(config_loader, "_self_root", lambda: profile)
+    monkeypatch.setenv("HOME", str(tmp_path / "home-vide"))
+    monkeypatch.chdir(tmp_path)  # pas de ./wiki.config.json
+
+    assert resolve_config_path() == cfg.resolve()
+
+
+def test_env_prioritaire_sur_racine_profil(tmp_path, monkeypatch):
+    """$MIMIR_CONFIG l'emporte sur le wiki.config.json du dossier du profil."""
+    env_cfg = _make_config(tmp_path / "env" / "wiki.config.json")
+    monkeypatch.setenv(ENV_CONFIG, str(env_cfg))
+    profile = tmp_path / "profile"
+    _make_config(profile / "wiki.config.json")
+    monkeypatch.setattr(config_loader, "_self_root", lambda: profile)
+
+    assert resolve_config_path() == env_cfg.resolve()
+
+
+def test_racine_profil_avant_xdg(tmp_path, monkeypatch):
+    """Racine profil ET XDG existent, pas d'env → la racine profil l'emporte."""
+    profile = tmp_path / "profile"
+    cfg = _make_config(profile / "wiki.config.json")
+    monkeypatch.setattr(config_loader, "_self_root", lambda: profile)
+    home = tmp_path / "home"
+    _make_config(home / ".config" / "mimir" / "wiki.config.json")
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.chdir(tmp_path)
+
+    assert resolve_config_path() == cfg.resolve()
+
+
 def test_env_fichier_absent_passe_au_suivant(tmp_path, monkeypatch):
     """MIMIR_CONFIG pointant un fichier absent → on retombe sur XDG (tolérant)."""
     monkeypatch.setenv(ENV_CONFIG, str(tmp_path / "fantome.json"))
@@ -109,7 +150,8 @@ def test_env_fichier_absent_passe_au_suivant(tmp_path, monkeypatch):
 
 
 def test_aucun_trouve_leve_configerror(tmp_path, monkeypatch):
-    """Rien nulle part → ConfigError actionnable mentionnant les 3 emplacements."""
+    """Rien nulle part → ConfigError actionnable mentionnant les 4 emplacements."""
+    # _self_root déjà neutralisé vers un dossier vide par l'autouse fixture.
     monkeypatch.setenv("HOME", str(tmp_path / "home-vide"))
     empty = tmp_path / "vide"
     empty.mkdir()
@@ -119,6 +161,7 @@ def test_aucun_trouve_leve_configerror(tmp_path, monkeypatch):
         resolve_config_path()
     msg = str(exc.value)
     assert ENV_CONFIG in msg
+    assert "dossier du profil/repo" in msg
     assert ".config/mimir/wiki.config.json" in msg
     assert "wiki.config.json" in msg
 

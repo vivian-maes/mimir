@@ -1,12 +1,29 @@
-# Configuration de l'agent Hermes pour le profil wiki-curator.
+# Configuration de l'agent Hermes pour le profil mimir.
 # Valeurs d'EXEMPLE (chemins génériques) — à adapter au déploiement réel.
+# NB : schéma suivant l'exemple documenté (hermes-remontee §6.2) — à valider
+# contre ta version d'Hermes ; les clés inconnues sont en principe ignorées.
 #
-# Installé via `hermes profile install`, le profil EMBARQUE déjà les skills
-# (copiés dans son dossier `skills/`) : pas besoin d'external_dirs. Le bloc
-# ci-dessous n'est utile qu'en BOUCLE DE DEV (clone local, rechargé direct).
-# skills:
-#   external_dirs:
-#     - /chemin/absolu/vers/mimir/skills
+# MODÈLE / LLM : volontairement NON défini ici. Hermes fournit le modèle au
+# profil / à la session (comme un skill sous Claude Code utilise le modèle de la
+# session). Mimir reste model-agnostique.
+
+# Skills : les 5 wiki-* sont EMBARQUÉS (copiés dans skills/ à l'install). Le profil
+# n'est PAS verrouillé sur eux : les OUTILS DE BASE d'Hermes (fichiers, web,
+# terminal) restent disponibles, et le hub est ouvert pour ajouter des skills
+# généralistes. (« N compétences » dans le dashboard ne compte que les skills
+# custom, pas les outils de base.)
+skills:
+  hub:
+    auto_update: false      # contrôle manuel des mises à jour
+    security_scan: true     # scanner les skills avant activation
+  # Boucle de DEV uniquement (clone local rechargé direct) — sinon laisser commenté :
+  # external_dirs:
+  #   - /chemin/absolu/vers/mimir/skills
+
+# Délégation : permet à l'agent de paralléliser (compilation de masse, audits de
+# liens) via delegate_task → sub-agents jetables. Modèle hérité de l'hôte (non figé).
+delegation:
+  max_iterations: 30
 
 # Pointeur vers la config runtime Mimir (work_root, layout, sync.backend).
 # Voir wiki.config.example.json à la racine du repo pour le schéma complet.

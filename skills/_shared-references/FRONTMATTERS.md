@@ -121,7 +121,7 @@ metadata:
   author: Vivian MAES
   tags: [knowledge-base, obsidian, karpathy]
   hermes:
-    profile: wiki-curator         # indice OPTIONNEL — la skill ne dépend pas d'un profil
+    profile: mimir         # indice OPTIONNEL — la skill ne dépend pas d'un profil
 ---
 ```
 

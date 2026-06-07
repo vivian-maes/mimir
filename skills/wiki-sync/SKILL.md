@@ -7,11 +7,11 @@ description: >
   Périmètre strictement borné à work_root (confinement) ; verrou hors zone synchronisée.
 license: Proprietary
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, sync, rclone, git]
   hermes:
-    profile: wiki-curator
+    profile: mimir
     category: knowledge-management
     related_skills: [wiki-extract, wiki-ingest, wiki-reading-grid, wiki-index]
     config:
@@ -50,7 +50,7 @@ wiki_sync.py [--config <wiki.config.json>] {lock|pull|push|validate|sync} [--dry
 ```
 
 > `--config` est **optionnel** : sans lui, le config est auto-découvert dans l'ordre
-> `$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`.
+> `$MIMIR_CONFIG` → `dossier du profil` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`.
 
 Backend choisi par `sync.backend` du config (`rclone` | `git`). **Sans clé `sync`**, le
 backend `noop` est utilisé (travail local, « contenu d'abord, synchro ensuite »).

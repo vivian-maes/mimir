@@ -7,11 +7,11 @@ description: >
   sources », « décompose ce PDF en articles ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, karpathy, ingestion]
   hermes:
-    profile: wiki-curator
+    profile: mimir
     category: knowledge-management
     related_skills: [wiki-extract, wiki-reading-grid, wiki-index, wiki-sync]
     config:
@@ -48,7 +48,7 @@ python scripts/wiki_ingest.py <inventory|write-article|finalize> …
 ```
 
 > `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
-> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
+> (`$MIMIR_CONFIG` → `dossier du profil` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
 > ci-dessous montrent `--config CFG` à titre indicatif ; il peut être omis.
 
 ## Procédure

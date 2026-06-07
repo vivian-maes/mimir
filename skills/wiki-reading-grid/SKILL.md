@@ -7,11 +7,11 @@ description: >
   grille de lecture de cet ouvrage », « régénère la grille ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, reading-grid, navigation]
   hermes:
-    profile: wiki-curator
+    profile: mimir
     category: knowledge-management
     related_skills: [wiki-extract, wiki-ingest, wiki-index, wiki-sync]
     config:
@@ -53,7 +53,7 @@ python scripts/wiki_reading_grid.py <generate|generate-all> …
 ```
 
 > `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
-> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
+> (`$MIMIR_CONFIG` → `dossier du profil` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
 > ci-dessous montrent `--config CFG` à titre indicatif ; il peut être omis.
 
 ## Procédure

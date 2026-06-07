@@ -8,6 +8,40 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-06-07
+
+### Added
+
+- **Auto-découverte de la config dans le dossier du profil Hermes.** En plus de
+  `$MIMIR_CONFIG`, `~/.config/mimir/` et `./`, le resolver cherche désormais à la
+  **racine du profil/repo** : `~/.hermes/profiles/<profil>/wiki.config.json` (en
+  prod) ou la racine du repo (en dev), déduite de l'emplacement de
+  `config_loader.py` (`_self_root()`, `parents[3]`). Ordre :
+  `$MIMIR_CONFIG` → **profil** → XDG → `./`. La config du profil prime sur la
+  globale. UX : déposer son `wiki.config.json` dans le dossier du profil installé
+  (p. ex. copier `wiki.config.example.json` → `wiki.config.json`) suffit — plus
+  besoin de `MIMIR_CONFIG`.
+- **Profil ouvert, pas verrouillé sur 5 skills.** `config.yaml` : **délégation
+  activée** (`delegation.max_iterations`, `delegate_task` pour paralléliser) et
+  **hub ouvert** (`skills.hub`) pour ajouter des skills généralistes en plus des
+  5 wiki-* embarqués. Les **outils de base** (fichiers, web, terminal) restent
+  disponibles. **Aucun `model:`** n'est imposé : Hermes fournit le LLM de la
+  session/profil (Mimir reste model-agnostique). SOUL/SPEC/runbook clarifient que
+  « N compétences » ne compte que les skills custom.
+
+### Changed
+
+- **Profil Hermes renommé `wiki-curator` → `mimir`.** Le `distribution.yaml`
+  porte `name: mimir` ; l'install crée `~/.hermes/profiles/mimir` et l'usage
+  devient `hermes -p mimir chat`. Aligné sur l'identité produit (et la mythologie :
+  Mímir = le sage gardien du savoir). Indices `metadata.hermes.profile` des 5
+  skills + `SOUL.md`/`config.yaml`/SPEC/ROADMAP mis à jour.
+  ⚠️ Après réinstallation, supprimer l'ancien profil : `rm -rf ~/.hermes/profiles/wiki-curator`.
+- `.gitignore` ignore `/wiki.config.json` (la racine du repo est un emplacement de
+  découverte en dev ; la config perso ne doit jamais être committée).
+- **`distribution.yaml`** : `description` en ligne simple (au lieu du scalaire
+  folded `>`) pour un affichage fiable dans le dashboard.
+
 ## [0.3.2] - 2026-06-07
 
 ### Fixed

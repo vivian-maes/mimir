@@ -1,20 +1,19 @@
-# Manifest du profil Hermes « wiki-curator » — COUCHE 2 (opt-in, jamais requise).
+# Manifest du profil Hermes « mimir » — COUCHE 2 (opt-in, jamais requise).
 #
 # Format : manifest PLAT (name/version/description/author/files) à la RACINE du
 # repo. `hermes profile install <git-url>` clone le repo, lit ce fichier, et
-# COPIE les chemins de `files:` dans ~/.hermes/profiles/wiki-curator/.
+# COPIE les chemins de `files:` dans ~/.hermes/profiles/mimir/.
 # C'est pourquoi SOUL.md et config.yaml vivent à la racine : ils doivent atterrir
 # à la racine du dossier de profil.
 #
 #   hermes profile install https://github.com/vivian-maes/mimir.git
+#   hermes -p mimir chat
 #
 # Réf. __projet__/SPEC.md §11 ; __projet__/_analyse_DevOps/hermes-sous-agents-vs-skills.md.
 
-name: wiki-curator
-version: "0.3.2"
-description: >
-  Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) à partir d'un
-  flux de sources : extrait, compile par notion, indexe, et synchronise.
+name: mimir
+version: "0.3.3"
+description: "Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) : extrait des sources, compile par notion, indexe et synchronise."
 author: Vivian MAES
 
 # Fichiers copiés dans le dossier du profil (relatifs à la racine du repo).

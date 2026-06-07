@@ -263,7 +263,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--config", default=None,
         help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
-             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+             "$MIMIR_CONFIG, dossier du profil, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
     )
     parser.add_argument("source", nargs="?", help="Chemin .pdf/.epub ou URL ; absent = scan _inbox/")
     parser.add_argument("--lang", default="fra+eng", help="Langue(s) OCR (défaut: fra+eng)")

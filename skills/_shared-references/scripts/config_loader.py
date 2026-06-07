@@ -60,6 +60,18 @@ _XDG_DEFAULT = "~/.config/mimir/wiki.config.json"
 _CWD_CONFIG_NAME = "wiki.config.json"
 
 
+def _self_root() -> Path:
+    """Racine du profil Hermes installé (`~/.hermes/profiles/<nom>/`) ou du repo (dev).
+
+    Déduite de l'emplacement de CE fichier, dont le chemin est stable :
+    ``<racine>/skills/_shared-references/scripts/config_loader.py`` → ``parents[3]``.
+    Permet de déposer un `wiki.config.json` **dans le dossier du profil courant**
+    et de le découvrir sans variable d'environnement (fonction isolée pour rester
+    monkeypatchable dans les tests).
+    """
+    return Path(__file__).resolve().parents[3]
+
+
 class ConfigError(ValueError):
     """Config absente, illisible, ou non conforme."""
 
@@ -149,23 +161,27 @@ def resolve_config_path(explicit: str | os.PathLike[str] | None = None) -> Path:
     n'est fourni, on cherche le premier emplacement **existant** dans l'ordre :
 
     1. ``$MIMIR_CONFIG`` (variable d'environnement) ;
-    2. ``~/.config/mimir/wiki.config.json`` (standard XDG) ;
-    3. ``./wiki.config.json`` (répertoire courant — peu fiable en cron, §12.7).
+    2. ``<racine profil/repo>/wiki.config.json`` (dossier du profil Hermes courant,
+       ``~/.hermes/profiles/<nom>/`` — cf. :func:`_self_root`) ;
+    3. ``~/.config/mimir/wiki.config.json`` (standard XDG) ;
+    4. ``./wiki.config.json`` (répertoire courant — peu fiable en cron, §12.7).
 
     Un ``explicit`` fourni court-circuite la recherche et est renvoyé tel quel
     (résolu en absolu) **sans vérifier son existence** : c'est `load_config` qui
     lèvera l'erreur « Config introuvable » habituelle, comportement déjà testé.
 
     Un ``$MIMIR_CONFIG`` défini mais pointant un fichier absent est **toléré** :
-    on passe au candidat suivant (XDG puis cwd) plutôt que d'échouer sec.
+    on passe au candidat suivant plutôt que d'échouer sec.
     """
     if explicit is not None:
         return Path(os.path.expanduser(os.fspath(explicit))).resolve()
 
     env_value = os.environ.get(ENV_CONFIG)
+    profile_cfg = _self_root() / _CWD_CONFIG_NAME
     candidates: list[Path] = []
     if env_value:
         candidates.append(Path(os.path.expanduser(env_value)))
+    candidates.append(profile_cfg)
     candidates.append(Path(os.path.expanduser(_XDG_DEFAULT)))
     candidates.append(Path.cwd() / _CWD_CONFIG_NAME)
 
@@ -176,8 +192,9 @@ def resolve_config_path(explicit: str | os.PathLike[str] | None = None) -> Path:
     raise ConfigError(
         "Aucun wiki.config.json trouvé. Emplacements cherchés (dans l'ordre) :\n"
         f"  1. ${ENV_CONFIG} ({env_value or 'non défini'})\n"
-        f"  2. {os.path.expanduser(_XDG_DEFAULT)}\n"
-        f"  3. ./{_CWD_CONFIG_NAME}  (cwd actuel : {Path.cwd()})\n"
+        f"  2. {profile_cfg}  (dossier du profil/repo)\n"
+        f"  3. {os.path.expanduser(_XDG_DEFAULT)}\n"
+        f"  4. ./{_CWD_CONFIG_NAME}  (cwd actuel : {Path.cwd()})\n"
         f"Configurez l'un de ces emplacements, ou passez --config <chemin>.\n"
         f"Exemple : export {ENV_CONFIG}=/chemin/vers/wiki.config.json"
     )

@@ -129,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--config", default=None,
         help="Chemin du wiki.config.json (optionnel ; auto-découverte si omis : "
-             "$MIMIR_CONFIG, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
+             "$MIMIR_CONFIG, dossier du profil, ~/.config/mimir/wiki.config.json, ./wiki.config.json)",
     )
     parser.add_argument("command", choices=sorted(_COMMANDS), help="Opération de synchro")
     parser.add_argument("--dry-run", action="store_true", help="`sync` : pull+validate sans push")

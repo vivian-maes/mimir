@@ -7,11 +7,11 @@ description: >
   la carte des sujets ». Lecture seule pour l'audit ; écritures bornées à work_root.
 license: Proprietary
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, index, audit]
   hermes:
-    profile: wiki-curator
+    profile: mimir
     category: knowledge-management
     related_skills: [wiki-extract, wiki-ingest, wiki-reading-grid, wiki-sync]
     config:
@@ -46,7 +46,7 @@ python scripts/wiki_index.py <regenerate|audit> …
 ```
 
 > `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
-> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
+> (`$MIMIR_CONFIG` → `dossier du profil` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`). Les exemples
 > ci-dessous montrent `--config CFG` à titre indicatif ; il peut être omis.
 
 ## Procédure

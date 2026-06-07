@@ -7,11 +7,11 @@ description: >
   source », « clippe cette page ». N'écrit que dans raw/ (confinement).
 license: Proprietary
 metadata:
-  version: "0.3.2"
+  version: "0.3.3"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, extraction, pdf, epub, ocr, scraping]
   hermes:
-    profile: wiki-curator
+    profile: mimir
     category: knowledge-management
     related_skills: [wiki-ingest, wiki-reading-grid, wiki-index, wiki-sync]
     config:
@@ -45,7 +45,7 @@ python scripts/wiki_extract.py [SOURCE] [--lang fra+eng] [--dry-run]
 ```
 
 > `--config <wiki.config.json>` est **optionnel** : sans lui, le config est auto-découvert
-> (`$MIMIR_CONFIG` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`).
+> (`$MIMIR_CONFIG` → `dossier du profil` → `~/.config/mimir/wiki.config.json` → `./wiki.config.json`).
 
 - **SOURCE absent** → scan de `_inbox/` (mode cron/curator) : tous les binaires déposés sont traités.
 - **SOURCE = chemin `.pdf`/`.epub`** → extraction de ce binaire.
