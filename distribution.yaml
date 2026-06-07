@@ -1,62 +1,26 @@
-# Profil Hermes « wiki-curator » — COUCHE 2 (opt-in, jamais requise).
+# Manifest du profil Hermes « wiki-curator » — COUCHE 2 (opt-in, jamais requise).
 #
-# DOIT vivre à la RACINE du repo : `hermes profile install <git-url>` clone le
-# repo et cherche ce distribution.yaml à la racine (pas de syntaxe #sous-dossier).
-#
-# Les 5 skills wiki-* sont portables et fonctionnent dans n'importe quel agent
-# SANS ce profil (couche 1). Ce profil apporte uniquement le confort « clé en
-# main » : identité persistante (SOUL.md), mémoire des conventions du vault, et
-# synchro planifiée (cron). Installable en un coup :
+# Format : manifest PLAT (name/version/description/author/files) à la RACINE du
+# repo. `hermes profile install <git-url>` clone le repo, lit ce fichier, et
+# COPIE les chemins de `files:` dans ~/.hermes/profiles/wiki-curator/.
+# C'est pourquoi SOUL.md et config.yaml vivent à la racine : ils doivent atterrir
+# à la racine du dossier de profil.
 #
 #   hermes profile install https://github.com/vivian-maes/mimir.git
 #
-# Réf. SPEC §11 (annexe Hermes — modèle en deux couches).
+# Réf. __projet__/SPEC.md §11 ; __projet__/_analyse_DevOps/hermes-sous-agents-vs-skills.md.
 
-apiVersion: hermes/v1
-kind: Profile
+name: wiki-curator
+version: "0.3.2"
+description: >
+  Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) à partir d'un
+  flux de sources : extrait, compile par notion, indexe, et synchronise.
+author: Vivian MAES
 
-metadata:
-  name: wiki-curator
-  version: "0.3.1"
-  author: Vivian MAES
-  description: >
-    Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) à partir
-    d'un flux de sources : extrait, compile par notion, indexe, et synchronise.
-
-# Persona (identité persistante + mémoire de structuration).
-soul: ./profiles/wiki-curator/SOUL.md
-
-# Configuration de l'agent (work_root, backend de synchro, external_dirs).
-config: ./profiles/wiki-curator/config.yaml
-
-# Les MÊMES skills que la couche 1 — référencés depuis le mono-repo, jamais
-# dupliqués (chemins relatifs à la racine du repo cloné).
-skills:
-  - skills/wiki-extract
-  - skills/wiki-ingest
-  - skills/wiki-reading-grid
-  - skills/wiki-index
-  - skills/wiki-sync
-
-# Ressources embarquées du profil (à la racine du repo).
-assets:
-  - path: ./filters.txt
-    as: filters.txt           # template d'exclusions rclone (à adapter au vault)
-  - path: ./wiki.config.example.json
-    as: wiki.config.example.json
-
-# Synchro planifiée — cron SELF-CONTAINED (chemins absolus, commande inline,
-# aucune dépendance au chargement d'une autre skill ; sessions cron sans cwd,
-# SPEC §12.7). Adapter le chemin du dépôt cloné des skills au déploiement réel.
-# NB : on garde `--config <chemin absolu>` EXPLICITE ici (par sécurité) car le
-# cron n'a pas de cwd garanti ; l'auto-découverte ($MIMIR_CONFIG → ~/.config/mimir
-# → ./) sert surtout les appels agent/manuels. Le config.yaml exporte MIMIR_CONFIG.
-cron:
-  - name: wiki-sync-pull-push
-    schedule: "*/30 * * * *"   # toutes les 30 min
-    command: >
-      python /chemin/absolu/vers/mimir/skills/wiki-sync/scripts/wiki_sync.py
-      sync --config /chemin/absolu/vers/wiki.config.json
-    description: >
-      Verrou → pull → push → validate du vault (backend selon sync.backend de
-      la config). N'opère que sous work_root ; verrou hors zone synchronisée.
+# Fichiers copiés dans le dossier du profil (relatifs à la racine du repo).
+files:
+  - SOUL.md                    # persona (identité persistante)
+  - config.yaml                # config de l'agent (external_dirs, MIMIR_CONFIG)
+  - skills/                    # les 5 skills wiki-* + _shared-references
+  - filters.txt                # template d'exclusions rclone
+  - wiki.config.example.json   # exemple de wiki.config.json

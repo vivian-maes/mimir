@@ -7,7 +7,7 @@ description: >
   Périmètre strictement borné à work_root (confinement) ; verrou hors zone synchronisée.
 license: Proprietary
 metadata:
-  version: "0.3.1"
+  version: "0.3.2"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, sync, rclone, git]
   hermes:

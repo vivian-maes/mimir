@@ -8,6 +8,20 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-06-07
+
+### Fixed
+
+- **`distribution.yaml` au vrai format Hermes.** Le manifest utilise désormais le
+  schéma **plat** documenté (`name`/`version`/`description`/`author`/`files`) au
+  lieu de la structure `apiVersion/kind/metadata/…` (qui causait
+  `Error: distribution.yaml missing 'name'` à `hermes profile install`).
+- **`SOUL.md` + `config.yaml` remontés à la racine du repo.** `profile install`
+  copie les `files:` dans `~/.hermes/profiles/wiki-curator/` ; un profil attend
+  `SOUL.md`/`config.yaml` à la racine de son dossier, donc ils doivent être listés
+  à plat. Dossier `profiles/` supprimé. Allow-list de publication ajustée
+  (`SOUL.md`, `config.yaml` ajoutés ; `profiles/` retiré).
+
 ## [0.3.1] - 2026-06-07
 
 ### Fixed
