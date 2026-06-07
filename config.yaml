@@ -1,12 +1,16 @@
 # Configuration de l'agent Hermes pour le profil « mimir ».
 #
-# VOLONTAIREMENT MINIMAL : le profil HÉRITE de la configuration du profil par
-# défaut d'Hermes (principe Hermes). On ne fige donc rien ici :
+# VOLONTAIREMENT MINIMAL : on ne fige ici que ce qui doit l'être ; le reste vient
+# du runtime Hermes ou d'une étape post-install. On ne déclare donc rien ici :
 #
-#   • Modèle / LLM : hérité (sinon `mimir setup` ou `hermes model` + clé API dans
-#     ~/.hermes/profiles/mimir/.env). Aucun bloc `model:` ici.
-#   • Outils de base (fichiers, web, terminal), délégation, skills du hub :
-#     fournis par l'hôte / hérités — rien à déclarer.
+#   • Modèle / LLM : HÉRITÉ du profil par défaut (absence de bloc `model:`).
+#     Sinon `mimir setup` ou `hermes model` + clé API dans ~/.hermes/profiles/mimir/.env.
+#   • Outils de base (fichiers, web, terminal) et délégation : fournis par le
+#     runtime Hermes — rien à déclarer.
+#   • Bundled skills de base : ATTENTION — `hermes profile install` ne copie QUE les
+#     fichiers de la distribution (les 5 wiki-*). Les bundled skills NE sont PAS
+#     seedées par l'install. Les ajouter au profil après coup : `hermes update`
+#     (synchronise les bundled skills dans tous les profils).
 #
 # Config runtime Mimir (work_root, backend de synchro) : voir wiki.config.json.
 # Depuis v0.3.3, il est AUTO-DÉCOUVERT s'il est déposé dans le dossier du profil

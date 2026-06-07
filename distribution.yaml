@@ -16,7 +16,7 @@
 # Réf. __projet__/SPEC.md §11.
 
 name: mimir
-version: "0.3.4"
+version: "0.3.5"
 description: "Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) : extrait des sources, compile par notion, indexe et synchronise."
 author: Vivian MAES
 license: Proprietary

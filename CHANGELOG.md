@@ -8,6 +8,19 @@ suivent la même version (bump synchronisé).
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-06-07
+
+### Fixed
+
+- **Skills de base manquantes après `hermes profile install` (doc corrigée).**
+  `hermes profile install` ne copie que les *distribution-owned files* (les 5
+  wiki-*) — il **ne seede PAS** les bundled skills de base (seuls `hermes profile
+  create` les seede, et `hermes update` les synchronise dans tous les profils).
+  Correction des affirmations erronées d'« héritage automatique » des skills
+  (`config.yaml`, `SPEC.md` §11, `RUNBOOK_VALIDATION_HERMES.md` §5, `SOUL.md`) et
+  ajout de l'étape post-install **`hermes update`** (« syncs new bundled skills to
+  all profiles » → `mimir (+N new)`). Le modèle LLM, lui, reste bien hérité.
+
 ## [0.3.4] - 2026-06-07
 
 ### Changed
