@@ -7,7 +7,7 @@ description: >
   la carte des sujets ». Lecture seule pour l'audit ; écritures bornées à work_root.
 license: Proprietary
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, index, audit]
   hermes:

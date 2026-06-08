@@ -7,7 +7,7 @@ description: >
   source », « clippe cette page ». N'écrit que dans raw/ (confinement).
 license: Proprietary
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, extraction, pdf, epub, ocr, scraping]
   hermes:

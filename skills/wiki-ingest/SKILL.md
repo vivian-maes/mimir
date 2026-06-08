@@ -7,7 +7,7 @@ description: >
   sources », « décompose ce PDF en articles ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, karpathy, ingestion]
   hermes:
@@ -82,6 +82,10 @@ python scripts/wiki_ingest.py <inventory|write-article|finalize> …
    ## Sources
    - [[raw/pdfs/<nom>.pdf.txt]] — chapitre N, p. X-Y.
    ```
+
+   - **Ancre de chapitre** dans la source : `…#chK` où `K` = le `order` du chapitre dans le
+     `.toc.json`, soit un **numéro** (`#ch3`) soit un **code d'ouvrage** (`#chR2`, `#chG3`).
+     C'est cette ancre qui rattache la notion à son chapitre dans la grille de lecture.
 
    - **Mermaid** obligatoire pour les schémas (jamais d'ASCII art). Wikilink dans un nœud :
      `A["[[<sujet>/<notion>]]"]` — **jamais** `[[[…]]]`.

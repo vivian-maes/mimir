@@ -45,8 +45,18 @@ def extract_summary(body: str) -> str:
     return ""
 
 
+def _normalize_wikilink(wikilink: str) -> str:
+    """Tolère un préfixe `wiki/` résiduel : `wiki/sujet/notion` → `sujet/notion`.
+
+    Les chemins du wiki sont relatifs à `cfg.WIKI` ; un `wiki/` en tête ferait
+    résoudre `cfg.WIKI / "wiki/…"` (introuvable). Défensif pour tous les appelants.
+    """
+    return wikilink.strip().removeprefix("wiki/").lstrip("/")
+
+
 def _find_article(cfg, wikilink: str) -> Path | None:
     """Localise le fichier d'un wikilink `sujet/notion` (NFD/NFC-safe), ou `None`."""
+    wikilink = _normalize_wikilink(wikilink)
     parts = wikilink.split("/")
     notion = parts[-1]
     subject = "/".join(parts[:-1])
@@ -61,6 +71,7 @@ def _find_article(cfg, wikilink: str) -> Path | None:
 
 def load_article(cfg, wikilink: str) -> ArticleInfo:
     """Charge l'`ArticleInfo` d'un wikilink `sujet/notion`. Fichier absent → `exists=False`."""
+    wikilink = _normalize_wikilink(wikilink)
     notion = wikilink.split("/")[-1]
     canonical = cfg.WIKI / f"{wikilink}.md"
     actual = _find_article(cfg, wikilink)

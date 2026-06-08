@@ -32,8 +32,21 @@ import wikilinks
 
 #: Extensions de contenu reconnues (pour retrouver le `base` d'un chemin raw).
 _CONTENT_EXTS = (".pdf.txt", ".epub.txt", ".md")
-#: Ancre de chapitre `chK` dans une source (`raw/…/x.pdf.txt#ch3`).
-_CH_ANCHOR_RE = re.compile(r"^ch0*(\d+)$", re.IGNORECASE)
+#: Ancre de chapitre `chK` dans une source. `K` est soit un **numéro** (`#ch3`),
+#: soit un **code d'ouvrage** (`#chR2`, `#chG3`, `#chC1`). Dans les deux cas, `K`
+#: doit matcher le champ `order` du `toc.json` (cf. `_chapter_key`).
+_CH_ANCHOR_RE = re.compile(r"^ch([A-Za-z]{0,2}\d{1,3})$", re.IGNORECASE)
+
+
+def _chapter_key(raw) -> str:
+    """Clé de chapitre normalisée, pour matcher une ancre `#chK` et un `order` du toc.
+
+    Numérique → sans zéros de tête (`"03"` → `"3"`) ; code d'ouvrage → majuscule
+    (`"g3"` → `"G3"`). Toute autre valeur est renvoyée trimée/majuscule telle quelle.
+    """
+    s = str(raw).strip().upper()
+    m = re.fullmatch(r"([A-Z]{0,2})0*(\d+)", s)
+    return f"{m.group(1)}{m.group(2)}" if m else s
 
 
 @dataclass
@@ -65,19 +78,23 @@ def _same_path(a: str, b: str) -> bool:
     return slug.same_file(os.path.normpath(a), os.path.normpath(b))
 
 
-def _chapters_cited(sources: list[str], content_rel: str) -> list[int]:
-    """Numéros de chapitres (de CET ouvrage) cités par les `sources` d'un article."""
-    found: list[int] = []
+def _chapters_cited(sources: list[str], content_rel: str) -> list[str]:
+    """Clés de chapitres (de CET ouvrage) citées par les `sources` d'un article.
+
+    L'ordre de citation est préservé (pas de tri : les clés peuvent être des codes
+    `R2`/`G3` non triables numériquement ; l'ordre de lecture est porté par le toc).
+    """
+    found: list[str] = []
     for src in sources:
         path, sep, anchor = src.partition("#")
         if not sep or not _same_path(path, content_rel):
             continue
         m = _CH_ANCHOR_RE.match(anchor.strip())
         if m:
-            k = int(m.group(1))
+            k = _chapter_key(m.group(1))
             if k not in found:
                 found.append(k)
-    return sorted(found)
+    return found
 
 
 def build_grid(cfg, content_rel: str) -> GridResult:
@@ -98,7 +115,10 @@ def build_grid(cfg, content_rel: str) -> GridResult:
 
     toc = json.loads(toc_path.read_text(encoding="utf-8"))
     work = str(toc.get("title") or base)
-    chapters = sorted(toc.get("chapters") or [], key=lambda c: c.get("order", 0))
+    # L'ordre des chapitres dans le `toc.json` EST l'ordre de lecture (vrai pour des
+    # `order` numériques 1,2,3… comme pour des codes d'ouvrage R1,G3,…). On ne retrie
+    # pas : trier des codes alphanumériquement casserait l'ordre canonique.
+    chapters = list(toc.get("chapters") or [])
 
     # Articles de cet ouvrage selon le ledger (ordre d'écriture agent préservé).
     led = ledger_mod.load_ledger(cfg.LEDGER)
@@ -106,7 +126,7 @@ def build_grid(cfg, content_rel: str) -> GridResult:
     article_wikilinks = list(entry.articles) if entry else []
 
     # Rattachement article → chapitre(s) via les ancres #chK des sources.
-    buckets: dict[int, list[str]] = {}
+    buckets: dict[str, list[str]] = {}
     orphans: list[str] = []
     placed: set[str] = set()
     for wl in article_wikilinks:
@@ -120,7 +140,7 @@ def build_grid(cfg, content_rel: str) -> GridResult:
             placed.add(wl)
 
     body = _render(work, chapters, buckets, orphans)
-    unresolved = [c.get("order") for c in chapters if not buckets.get(c.get("order"))]
+    unresolved = [c.get("order") for c in chapters if not buckets.get(_chapter_key(c.get("order")))]
     return GridResult(
         content_rel=content_rel,
         doc_type=doc_type,
@@ -162,7 +182,7 @@ def _with_frontmatter(
 def _render(
     work: str,
     chapters: list[dict],
-    buckets: dict[int, list[str]],
+    buckets: dict[str, list[str]],
     orphans: list[str],
 ) -> str:
     """Corps Markdown : un bloc par chapitre + navigation Précédent/Suivant."""
@@ -174,7 +194,7 @@ def _render(
         anchor = wikilinks.chapter_anchor(order, title)
         lines.append(f"## {anchor}")
         lines.append("")
-        wls = buckets.get(order) or []
+        wls = buckets.get(_chapter_key(order)) or []
         if wls:
             lines.append("Lire dans l'ordre :")
             lines.append("")

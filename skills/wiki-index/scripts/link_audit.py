@@ -19,6 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import slug
 import wikilinks
 
 _INDEX_NAMES = {"INDEX.md", "_INDEX.md"}
@@ -29,6 +30,7 @@ class AuditReport:
     broken: list[tuple[str, str]] = field(default_factory=list)    # (fichier, cible)
     orphans: list[str] = field(default_factory=list)              # article non indexé
     dangling: list[tuple[str, str]] = field(default_factory=list)  # (index, cible)
+    suggestions: dict[str, str] = field(default_factory=dict)      # cible cassée → slug ASCII
 
     @property
     def total(self) -> int:
@@ -93,12 +95,36 @@ def _pass_orphans(cfg) -> list[str]:
     return orphans
 
 
+def _suggest_slug(cfg, target: str) -> str | None:
+    """Pour une cible cassée accentuée, propose le slug ASCII si le fichier existe.
+
+    Les noms de fichiers sont des slugs ASCII (convention) ; un wikilink accentué
+    `[[réglementation/relèvement]]` ne résout pas, alors que le fichier
+    `reglementation/relevement.md` existe. On propose la forme slugifiée plutôt que
+    de tolérer l'accent (qui resterait un slug cassé). Lecture seule.
+    """
+    rel = target.strip().removeprefix("wiki/").lstrip("/")
+    if "/" not in rel:
+        return None
+    subject, _, notion = rel.rpartition("/")
+    candidate = f"{slug.slugify(subject)}/{slug.slugify(notion)}"
+    if candidate == rel:  # déjà en ASCII : pas une suggestion utile
+        return None
+    return candidate if (cfg.WIKI / f"{candidate}.md").is_file() else None
+
+
 def audit(cfg) -> AuditReport:
     """Exécute les 3 passes en lecture seule et renvoie le rapport."""
     files = _markdown_files(cfg)
     broken, dangling = _pass_broken_and_dangling(cfg, files)
     orphans = _pass_orphans(cfg)
-    return AuditReport(broken=broken, orphans=orphans, dangling=dangling)
+    suggestions: dict[str, str] = {}
+    for _, target in (*broken, *dangling):
+        if target not in suggestions:
+            sugg = _suggest_slug(cfg, target)
+            if sugg:
+                suggestions[target] = sugg
+    return AuditReport(broken=broken, orphans=orphans, dangling=dangling, suggestions=suggestions)
 
 
 def render_report(report: AuditReport, *, today: str) -> str:
@@ -110,10 +136,15 @@ def render_report(report: AuditReport, *, today: str) -> str:
         f"Passe 3 — index → vide ........... {len(report.dangling)}",
         f"RÉSULTAT : {'OK (0 anomalie)' if report.ok else f'KO ({report.total} anomalies)'}",
     ]
+    def _line(src: str, tgt: str) -> str:
+        sugg = report.suggestions.get(tgt)
+        hint = f" (suggéré : [[{sugg}]])" if sugg else ""
+        return f"  - {src} → [[{tgt}]]{hint}"
+
     if report.broken:
         lines.append("")
         lines.append("Liens cassés :")
-        lines += [f"  - {src} → [[{tgt}]]" for src, tgt in report.broken]
+        lines += [_line(src, tgt) for src, tgt in report.broken]
     if report.orphans:
         lines.append("")
         lines.append("Fichiers fantômes (non indexés) :")
@@ -121,5 +152,5 @@ def render_report(report: AuditReport, *, today: str) -> str:
     if report.dangling:
         lines.append("")
         lines.append("Entrées d'index pointant dans le vide :")
-        lines += [f"  - {src} → [[{tgt}]]" for src, tgt in report.dangling]
+        lines += [_line(src, tgt) for src, tgt in report.dangling]
     return "\n".join(lines) + "\n"

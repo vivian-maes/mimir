@@ -59,6 +59,33 @@ def _drop(cfg, name, data=b"%PDF-binaire"):
     return p
 
 
+# --- robustesse _inbox/ : les intrus n'interrompent pas le scan -----------
+def test_scan_inbox_trie_supportes_et_intrus(cfg):
+    """`.pdf`/`.epub` → à extraire ; `README.md`/`.txt` → ignorés ; `.`/.DS_Store écartés."""
+    _drop(cfg, "guide.pdf")
+    _drop(cfg, "livre.epub")
+    _drop(cfg, "README.md", data=b"# procedure")
+    _drop(cfg, "notes.txt", data=b"texte")
+    _drop(cfg, ".DS_Store", data=b"\x00")
+    to_extract, skipped = wiki_extract.scan_inbox(cfg)
+    assert sorted(p.name for p in to_extract) == ["guide.pdf", "livre.epub"]
+    assert sorted(p.name for p in skipped) == ["README.md", "notes.txt"]  # .DS_Store ni l'un ni l'autre
+
+
+def test_run_ne_crashe_pas_sur_readme(cfg, monkeypatch):
+    """Un README.md dans `_inbox/` ne fait plus échouer le batch ; le .pdf est traité."""
+    _install_fake(monkeypatch, content="Texte du PDF.\n")
+    _drop(cfg, "book.pdf")
+    _drop(cfg, "README.md", data=b"# procedure")
+    outcomes = wiki_extract.run(cfg, None, lang="fra+eng", dry_run=False, skip_sync=True)
+    statuses = sorted(o.status for o in outcomes)
+    assert statuses == ["extrait", "ignored"]
+    assert (cfg.RAW / "pdfs" / "book.pdf.txt").is_file()
+    assert (cfg.INBOX / "README.md").is_file()            # intrus laissé en place
+    # code retour non-erreur
+    assert not any(o.status == "error" for o in outcomes)
+
+
 # --- écriture complète + move vide l'inbox --------------------------------
 def test_pdf_complet_et_inbox_vide(cfg, monkeypatch):
     _install_fake(monkeypatch, content="Texte du PDF.\n")

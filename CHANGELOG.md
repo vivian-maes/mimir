@@ -6,7 +6,66 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ;
 versionnage [SemVer](https://semver.org/lang/fr/). Les frontmatters des skills
 suivent la même version (bump synchronisé).
 
-## [Unreleased]
+## [0.5.0] - 2026-06-08
+
+### Added
+
+- **Nouveau skill `wiki-init` — amorçage du vault au premier usage.** Sur un `work_root`
+  vide, rien n'existait encore (pas de `_inbox/` où déposer, pas d'`INDEX.md`, pas d'état
+  de synchro) ; les dossiers n'étaient créés qu'implicitement, à la première écriture, et
+  l'emplacement du wiki était difficile à retrouver. Le skill pose la structure une fois,
+  de façon **idempotente** et **bornée à `work_root`** :
+  - **`apply`** (défaut) : crée la racine + l'arborescence (`_inbox/`, `raw/`, `wiki/`,
+    `reading-grids/`), écrit un accueil `_inbox/LISEZ-MOI.md` et un `wiki/INDEX.md` initial
+    **s'ils sont absents** (jamais d'écrasement), puis amorce la synchro (`pull` → `push`
+    sous verrou). `--skip-sync` pour la structure seule.
+  - **`status`** : diagnostic en lecture seule — imprime le `wiki.config.json` résolu et
+    tous les chemins dérivés, en signalant ce qui existe/manque (répond à « où est mon
+    wiki »).
+  `.wiki/` (ledger) reste créé à l'ingestion ; l'index complet se régénère via
+  `wiki-index regenerate`. 8 tests hermétiques (création, idempotence, confinement,
+  amorçage sync via runner mocké). SOUL.md (étape 0), README (« Première utilisation »)
+  et CLAUDE.md mis à jour. La suite passe de 5 à **6 skills**.
+- **Chapitrage alphanumérique dans `wiki-reading-grid`.** L'ancre `#chK` accepte désormais un
+  **numéro** (`#ch3`) **ou un code d'ouvrage** (`#chR2`, `#chG3`, `#chC1`), `K` devant matcher
+  le champ `order` du `.toc.json`. L'**ordre des chapitres dans le `toc.json` fait foi** (la
+  grille ne retrie plus : trier des codes alphabétiquement cassait l'ordre canonique). Helper
+  `_chapter_key` (normalisation `"03"→"3"`, `"g3"→"G3"`). Rétrocompatible avec le numérique.
+- **Suggestion de slug ASCII dans l'audit `wiki-index`.** Un lien cassé accentué
+  (`[[réglementation/relèvement]]`) propose la forme existante slugifiée
+  (`reglementation/relevement`) — aide read-only, sans légitimer les slugs non-ASCII.
+
+### Changed
+
+- **README rafraîchi.** Le bandeau « projet en construction / tout reste à créer » laisse
+  place à l'état réel (pipeline 6 skills en marche), avec une section « Comment ça marche »,
+  un encart « langue » assumant le français, et un appel aux retours. Le lien interne mort
+  vers `_analyse_DevOps/` (jamais publié) est retiré.
+
+### Fixed
+
+- **Mise à jour du profil documentée.** Sur un profil déjà installé, relancer `hermes
+  profile install` échoue (« already exists ») : la mise à niveau se fait via `hermes
+  profile update mimir` (en place) ou `hermes profile install … --force`. ⚠️ `update`
+  prend le **nom du profil** (`mimir`), pas l'URL git — passer l'URL échoue (« Profile
+  '…' is not a distribution »). README + runbook de déploiement (§6) précisés.
+- **Grille à « 0 article lié » après ingestion (cause racine).** Le ledger stockait des
+  wikilinks préfixés `wiki/` que `article_index.load_article` re-concaténait à `cfg.WIKI`
+  (`wiki/wiki/…`, introuvable → tous les articles orphelins). `wiki-ingest finalize`
+  canonicalise désormais en `sujet/notion` (sans préfixe) et `load_article`/`_find_article`
+  tolèrent un préfixe résiduel. Re-`finalize` redevient idempotent.
+- **Run d'extraction interrompu par un intrus dans `_inbox/`.** Un `README.md`/`.txt` atteignait
+  `doc_type_for` (appelé hors `try`) et faisait crasher tout le batch (non-ingestion silencieuse
+  en cron). `scan_inbox` ne retient que `.pdf`/`.epub` et signale les fichiers ignorés ;
+  `doc_type_for` est passé sous `try`. Helper `extractors.is_supported`.
+
+### Notes
+
+- **Le « bug regenerate écrase le ledger » n'existait pas** : le ledger n'est écrit que par
+  `wiki-ingest finalize` ; `wiki-index regenerate` n'y touche jamais. Le symptôme était une
+  rechute du préfixe `wiki/` lors d'un re-`finalize`. Démystifié dans `CONVENTIONS.md` §9.
+- **Le SKILL.md n'imposait pas la convention `#chK` (R1/G3)** : elle a été déduite par l'agent
+  face au guide. Les deux conventions sont désormais explicitement documentées et supportées.
 
 ## [0.4.0] - 2026-06-07
 

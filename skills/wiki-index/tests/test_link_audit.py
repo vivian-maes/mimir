@@ -51,6 +51,30 @@ def test_liens_vers_raw_hors_scope(vault):
     assert report.broken == []                       # raw/ exclu du périmètre d'audit
 
 
+def test_lien_accentue_suggere_slug_ascii(vault):
+    """Un `[[navigation/relèvement]]` accentué (cassé) propose le slug ASCII existant."""
+    ib.regenerate(vault, dry_run=False)
+    art = vault.WIKI / "navigation" / "maree.md"
+    art.write_text(
+        art.read_text(encoding="utf-8") + "\n## Relations\n- [[navigation/relèvement]] : lien accentué.\n",
+        encoding="utf-8",
+    )
+    report = la.audit(vault)
+    assert ("wiki/navigation/maree.md", "navigation/relèvement") in report.broken
+    assert report.suggestions.get("navigation/relèvement") == "navigation/relevement"
+    out = la.render_report(report, today="2026-06-08")
+    assert "(suggéré : [[navigation/relevement]])" in out
+
+
+def test_lien_casse_sans_equivalent_pas_de_suggestion(vault):
+    """Un lien cassé sans fichier slugifié correspondant n'a pas de suggestion."""
+    ib.regenerate(vault, dry_run=False)
+    art = vault.WIKI / "navigation" / "maree.md"
+    art.write_text(art.read_text(encoding="utf-8") + "\n- [[navigation/inexistant]]\n", encoding="utf-8")
+    report = la.audit(vault)
+    assert "navigation/inexistant" not in report.suggestions
+
+
 def test_audit_aucune_ecriture(vault):
     ib.regenerate(vault, dry_run=False)
     snapshot = {p: p.stat().st_mtime_ns for p in vault.work_root.rglob("*") if p.is_file()}

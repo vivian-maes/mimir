@@ -102,7 +102,15 @@ def cmd_finalize(
     content_rel = source if not Path(source).is_absolute() else (
         Path(source).resolve().relative_to(cfg.work_root).as_posix()
     )
-    articles_clean = [a.strip() for a in articles if a.strip()]
+    # Canonicalisation : le ledger (et la colonne « Articles wiki ») stocke des
+    # wikilinks `sujet/notion` SANS préfixe `wiki/`. `article_index.load_article`
+    # concatène `cfg.WIKI / wikilink` ; un `wiki/` résiduel donnerait `wiki/wiki/…`
+    # (article introuvable → grille à 0 article lié). Re-`finalize` reste idempotent.
+    articles_clean = [
+        a.strip().removeprefix("wiki/").lstrip("/")
+        for a in articles
+        if a.strip()
+    ]
     articles_cell = ", ".join(f"[[{a}]]" for a in articles_clean) or "—"
     today = _today().isoformat()
 

@@ -7,7 +7,7 @@ description: >
   grille de lecture de cet ouvrage », « régénère la grille ». Borné à work_root.
 license: Proprietary
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, reading-grid, navigation]
   hermes:
@@ -43,10 +43,15 @@ Skill **100 % déterministe** : il n'y a **rien à rédiger**, tu enchaînes des
 La grille **ordonne des liens** — elle ne duplique **aucun** contenu. Elle croise trois sources
 (SPEC §8) :
 
-- le `<base>.toc.json` (clé `chapters`, ordonnée) — l'ossature de lecture ;
+- le `<base>.toc.json` (clé `chapters`, **ordre = ordre de lecture**, non retrié) — l'ossature ;
 - le **ledger** — les articles produits depuis cet ouvrage, dans l'ordre d'écriture ;
 - les `sources` du frontmatter de chaque article — l'ancre `…#chK` rattache l'article au
-  chapitre `order=K`.
+  chapitre dont `order == K`.
+
+> **`K` = numéro OU code d'ouvrage.** `#ch3` matche `order: 3` ; `#chG3` matche `order: "G3"`
+> (codes type R1-R9 / G1-G6 / C1-C2). Dans tous les cas `K` **doit** matcher le champ `order`
+> du `toc.json`, et l'**ordre des chapitres dans le `toc.json` fait foi** (la grille ne réordonne
+> pas — trier des codes alphabétiquement casserait l'ordre canonique).
 
 ```sh
 python scripts/wiki_reading_grid.py <generate|generate-all> …

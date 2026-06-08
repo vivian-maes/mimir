@@ -30,6 +30,19 @@ def doc_type_for(source: str | Path) -> str:
     raise ExtractorError(f"Format non supporté : {source!r} (extensions : .pdf, .epub, ou URL http).")
 
 
+def is_supported(source: str | Path) -> bool:
+    """Vrai si `source` a un extracteur (URL http, `.pdf` ou `.epub`). Ne lève jamais.
+
+    Sert au tri de la dropzone `_inbox/` : un fichier non supporté (README, .txt,
+    artefact OS…) doit être ignoré, pas faire échouer le scan.
+    """
+    try:
+        doc_type_for(source)
+        return True
+    except ExtractorError:
+        return False
+
+
 def get_extractor(source: str | Path):
     """Renvoie le module extracteur adapté (import paresseux pour tolérer les libs absentes)."""
     dt = doc_type_for(source)

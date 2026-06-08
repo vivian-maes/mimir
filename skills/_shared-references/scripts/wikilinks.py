@@ -113,11 +113,12 @@ def resolve(cfg, src_file: Path, target: str) -> Path | None:
     return None
 
 
-def chapter_anchor(order: int, title: str) -> str:
+def chapter_anchor(order: int | str, title: str) -> str:
     """Texte d'ancrage d'un chapitre — sert à LA FOIS au titre et au lien Précédent/Suivant.
 
     Obsidian résout `[[#X]]` vers un titre dont le texte vaut `X` : en dérivant le
     titre rendu et le lien de cette même chaîne, on garantit l'absence de lien
-    interne cassé. Format : `Ch. 3 — Se positionner`.
+    interne cassé. `order` peut être un numéro (`3`) ou un code d'ouvrage (`"G3"`) :
+    format `Ch. 3 — Se positionner` ou `Ch. G3 — Marées`.
     """
     return f"Ch. {order} — {title}".strip()

@@ -93,3 +93,23 @@ Conventions à implémenter en Phase 4 (non codées en P0) :
 12. **Ledger atomique** (tmp + rename), **hors sync** ; si corrompu, repartir de `{}` (idempotent).
 13. **Grille = liens ordonnés**, pas de duplication ; liens non résolus = travail restant visible.
 14. **Double `_assets`** : un par sujet (wiki) **et** un par type (raw) — ne pas centraliser ; préfixer si collision.
+
+## 9. Pièges battle-tested (compilation d'un gros PDF) `[v0.6.0]`
+
+Retours de la 1ère compilation d'un guide à chapitres codés (R1-R9, G1-G6, C1-C2) :
+
+- **Ledger sans préfixe `wiki/`** : les wikilinks du ledger (`finalize --articles`) et de la
+  colonne « Articles wiki » sont des `sujet/notion` **sans** préfixe. `load_article` concatène
+  `cfg.WIKI / wikilink` : un `wiki/` résiduel donne `wiki/wiki/…` (article introuvable → grille à
+  **0 article lié**). `finalize` strippe désormais le préfixe ; `load_article` le tolère.
+- **`wiki-index regenerate` ne touche JAMAIS le ledger** (écrit uniquement par `wiki-ingest
+  finalize`). Si la grille « repasse à 0 » après un `regenerate`, la cause est un **re-`finalize`**
+  intermédiaire avec des articles préfixés `wiki/`, pas `regenerate`. Ne pas ajouter de workaround.
+- **Ancre de chapitre `#chK`** : `K` est soit un **numéro** (`#ch3`) soit un **code d'ouvrage**
+  (`#chR2`, `#chG3`). Dans tous les cas, `K` doit matcher le champ `order` du `toc.json`. L'**ordre
+  des chapitres dans le `toc.json` fait foi** (ordre de lecture) — la grille ne le réordonne pas.
+- **Cibles de wikilink toujours en slug ASCII** : un `[[réglementation/relèvement]]` accentué ne
+  résout pas. L'audit `wiki-index` **suggère** la forme slugifiée (`reglementation/relevement`) ;
+  attention aux **doublons macOS** (NFD/NFC) si un fichier accentué a été créé à la main.
+- **`_inbox/` tolère les intrus** : un `README.md`/`.txt` est **ignoré** (warning), il
+  n'interrompt plus le scan ; seuls `.pdf`/`.epub` sont extraits.

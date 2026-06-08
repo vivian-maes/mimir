@@ -52,7 +52,7 @@ _SKIP_NAMES = {".DS_Store"}
 class Outcome:
     source: str
     doc_type: str
-    status: str  # extrait | skipped_duplicate | error | locked
+    status: str  # extrait | skipped_duplicate | ignored | error | locked
     content_path: Path | None = None
     suffixed: bool = False
     message: str = ""
@@ -106,16 +106,17 @@ def _place_binary(src: Path, dest: Path, *, from_inbox: bool, work_root: Path) -
 # --- pipeline d'une source -------------------------------------------------
 def process_source(cfg, source, *, from_inbox: bool, lang: str, dry_run: bool) -> Outcome:
     """Extrait une source unique (binaire ou URL) vers raw/<type>/."""
-    doc_type = extractors.doc_type_for(source)
-    type_dir = cfg.RAW / doc_type
     work_root = cfg.work_root
 
     try:
+        doc_type = extractors.doc_type_for(source)  # peut lever (format non supporté)
+        type_dir = cfg.RAW / doc_type
         extractor = extractors.get_extractor(source)
         result = extractor.extract(source, lang=lang)
     except ExtractorError as exc:
-        # binaire conservé dans _inbox/ : reprise au prochain run (pas de move)
-        return Outcome(str(source), doc_type, "error", message=str(exc))
+        # format non supporté ou extraction en échec : binaire conservé dans _inbox/
+        # (reprise au prochain run, pas de move) ; le batch n'est pas interrompu.
+        return Outcome(str(source), "-", "error", message=str(exc))
 
     content_sha = iohelpers.sha256_text(result.raw_content)
 
@@ -193,16 +194,24 @@ def process_source(cfg, source, *, from_inbox: bool, lang: str, dry_run: bool) -
     return Outcome(str(source), doc_type, "extrait", content_path, suffixed)
 
 
-def scan_inbox(cfg) -> list[Path]:
-    """Binaires présents dans `_inbox/` (plat, routage par extension)."""
+def scan_inbox(cfg) -> tuple[list[Path], list[Path]]:
+    """Trie `_inbox/` (plat) : `(à_extraire, ignorés)`.
+
+    `à_extraire` = binaires supportés (`.pdf`/`.epub`). `ignorés` = fichiers présents
+    mais sans extracteur (README, `.txt`, etc.) : ils ne doivent PAS faire échouer le
+    scan (sinon, en cron, non-ingestion silencieuse des sources valides). Les fichiers
+    cachés et `.DS_Store` sont écartés en amont (ni traités ni signalés).
+    """
     inbox = cfg.INBOX
     if not inbox.is_dir():
-        return []
-    out = []
+        return [], []
+    valid: list[Path] = []
+    skipped: list[Path] = []
     for p in sorted(inbox.iterdir()):
-        if p.is_file() and p.name not in _SKIP_NAMES and not p.name.startswith("."):
-            out.append(p)
-    return out
+        if not (p.is_file() and p.name not in _SKIP_NAMES and not p.name.startswith(".")):
+            continue
+        (valid if extractors.is_supported(p) else skipped).append(p)
+    return valid, skipped
 
 
 def run(cfg, source, *, lang: str, dry_run: bool, skip_sync: bool = False) -> list[Outcome]:
@@ -226,9 +235,14 @@ def run(cfg, source, *, lang: str, dry_run: bool, skip_sync: bool = False) -> li
             from_inbox = (not extractors.is_url(source)) and (cfg.INBOX in Path(source).resolve().parents)
             outcomes = [process_source(cfg, source, from_inbox=from_inbox, lang=lang, dry_run=dry_run)]
         else:
+            to_extract, skipped = scan_inbox(cfg)
             outcomes = [
                 process_source(cfg, str(p), from_inbox=True, lang=lang, dry_run=dry_run)
-                for p in scan_inbox(cfg)
+                for p in to_extract
+            ]
+            outcomes += [
+                Outcome(str(p), "-", "ignored", message="format non supporté (ni .pdf ni .epub)")
+                for p in skipped
             ]
 
         # post-sync seulement si du contenu a réellement été écrit (pas en dry-run)
@@ -249,6 +263,7 @@ def _digest(outcomes: list[Outcome]) -> str:
         tag = {
             "extrait": "✅ extrait" + (" (suffixé -2)" if o.suffixed else ""),
             "skipped_duplicate": "↩️  doublon (ignoré)",
+            "ignored": "⚠️  ignoré (format non supporté)",
             "error": "❌ erreur",
             "locked": "🔒 verrou tenu",
         }.get(o.status, o.status)

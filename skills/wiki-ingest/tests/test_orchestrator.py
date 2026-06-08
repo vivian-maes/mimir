@@ -98,6 +98,29 @@ def test_finalize_met_a_jour_statut_et_ledger(cfg):
     ]
 
 
+# --- normalisation : le ledger stocke sujet/notion SANS préfixe wiki/ ------
+def test_finalize_strippe_prefixe_wiki(cfg):
+    """Un `--articles wiki/sujet/notion` est canonicalisé en `sujet/notion`.
+
+    Sinon `load_article` résoudrait `cfg.WIKI / "wiki/sujet/notion"` (introuvable),
+    d'où la grille à « 0 article lié » du guide brevet. Re-finalize reste idempotent.
+    """
+    _seed_pdf(cfg)
+    e = wiki_ingest.cmd_inventory(cfg, None, skip_sync=True, dry_run=False)["worklist"][0]
+    wiki_ingest.cmd_finalize(
+        cfg, e["content_path"], e["sha256"],
+        ["wiki/navigation/relevement", "navigation/triangulation"], skip_sync=True,
+    )
+    led = L.load_ledger(cfg.LEDGER)
+    assert led["raw/pdfs/navigation-cotiere.pdf.txt"].articles == [
+        "navigation/relevement", "navigation/triangulation"
+    ]
+    rows = status_table.load_status(cfg.RAW / "pdfs" / "_status.md")
+    row = next(r for r in rows if r.fichier == "navigation-cotiere.pdf.txt")
+    assert "[[wiki/navigation/relevement]]" not in row.articles
+    assert "[[navigation/relevement]]" in row.articles
+
+
 # --- pipeline complet sans LLM ---------------------------------------------
 def test_pipeline_complet(cfg, tmp_path):
     _seed_pdf(cfg)

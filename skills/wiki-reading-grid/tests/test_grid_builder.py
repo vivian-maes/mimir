@@ -1,13 +1,36 @@
 """Tests unitaires du cœur de construction de grille (croisement toc × ledger × ancres)."""
 
+import article_index
 import grid_builder as gb
 
 CONTENT_REL = "raw/pdfs/navigation-cotiere.pdf.txt"
 
 
+def test_load_article_tolere_prefixe_wiki(vault):
+    """`load_article` résout aussi bien `sujet/notion` que `wiki/sujet/notion`."""
+    a = article_index.load_article(vault, "navigation/relevement")
+    b = article_index.load_article(vault, "wiki/navigation/relevement")
+    assert a.exists and b.exists
+    assert a.path == b.path
+    assert b.sources == [f"{CONTENT_REL}#ch2"]
+
+
 def test_chapters_cited():
     srcs = [f"{CONTENT_REL}#ch2", f"{CONTENT_REL}#ch4", "raw/web/x.md", "raw/pdfs/autre.pdf.txt#ch1"]
-    assert gb._chapters_cited(srcs, CONTENT_REL) == [2, 4]   # autre ouvrage + web ignorés
+    assert gb._chapters_cited(srcs, CONTENT_REL) == ["2", "4"]   # clés str ; autre ouvrage + web ignorés
+
+
+def test_chapters_cited_codes_ouvrage():
+    """`#chR2`/`#chG3` (codes d'ouvrage) sont reconnus et normalisés en majuscule."""
+    srcs = [f"{CONTENT_REL}#chR2", f"{CONTENT_REL}#chg3", f"{CONTENT_REL}#chC1"]
+    assert gb._chapters_cited(srcs, CONTENT_REL) == ["R2", "G3", "C1"]   # ordre de citation préservé
+
+
+def test_chapter_key_normalise():
+    assert gb._chapter_key(3) == "3"
+    assert gb._chapter_key("03") == "3"          # zéros de tête (ancien #ch03)
+    assert gb._chapter_key("g3") == "G3"         # code d'ouvrage en majuscule
+    assert gb._chapter_key("R02") == "R2"
 
 
 def test_build_buckets_et_ordre(vault):
