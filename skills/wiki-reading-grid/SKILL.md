@@ -5,9 +5,9 @@ description: >
   perdu par l'éclatement en notions, en pointant dans le bon ordre vers les articles wiki
   avec liens Précédent/Suivant. Aucune duplication de contenu. Déclencher sur « génère la
   grille de lecture de cet ouvrage », « régénère la grille ». Borné à work_root.
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, reading-grid, navigation]
   hermes:

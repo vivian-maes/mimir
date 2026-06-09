@@ -5,9 +5,9 @@ description: >
   Backend pluggable (rclone ou git) sélectionné par wiki.config.json. Déclencher sur
   « synchronise le vault », « pull/push le second cerveau », « lock/validate la synchro ».
   Périmètre strictement borné à work_root (confinement) ; verrou hors zone synchronisée.
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, sync, rclone, git]
   hermes:

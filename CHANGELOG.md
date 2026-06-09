@@ -6,6 +6,17 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) ;
 versionnage [SemVer](https://semver.org/lang/fr/). Les frontmatters des skills
 suivent la même version (bump synchronisé).
 
+## [0.5.1] - 2026-06-09
+
+### Changed
+
+- **Licence : passage de propriétaire (« Tous droits réservés ») à
+  [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).**
+  Usage non commercial libre (perso, recherche, éducation, assos), modifications et
+  redistribution comprises ; usage commercial interdit sans accord écrit. Mise à jour du
+  `LICENSE`, du champ `license` de `distribution.yaml` et des 6 `SKILL.md`
+  (`PolyForm-Noncommercial-1.0.0`).
+
 ## [0.5.0] - 2026-06-08
 
 ### Added

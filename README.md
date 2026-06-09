@@ -131,4 +131,15 @@ Du coup, **tout retour est le bienvenu** — un bug croisé, une idée, un usage
 auquel on n'avait pas pensé. N'hésitez pas à ouvrir une issue ou à partager
 votre expérience.
 
+## Licence
+
+Mimir est distribué sous **[PolyForm Noncommercial License 1.0.0](LICENSE)**
+([texte de référence](https://polyformproject.org/licenses/noncommercial/1.0.0)).
+Tout usage **non commercial** est permis — usage personnel, recherche, éducation,
+associations — y compris modifier, forker et redistribuer. **L'usage commercial est
+interdit** sans accord écrit préalable.
+
+> ℹ️ Il s'agit d'une licence **« source-available »**, pas d'une licence open source au
+> sens OSI/FSF (lesquelles exigent d'autoriser l'usage commercial).
+
 _Mimir — un second cerveau qui s'entretient tout seul._

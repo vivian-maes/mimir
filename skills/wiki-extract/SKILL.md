@@ -5,9 +5,9 @@ description: >
   Extracteurs pluggables exposant un contrat commun ; PDF avec OCR auto si pas de
   couche texte. Déclencher sur « extrais ce PDF/EPUB/URL en raw », « ajoute cette
   source », « clippe cette page ». N'écrit que dans raw/ (confinement).
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, extraction, pdf, epub, ocr, scraping]
   hermes:

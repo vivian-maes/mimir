@@ -115,7 +115,7 @@ Contenu nettoyé **inline** (anti link-rot) ; images localisées dans `raw/web/_
 name: wiki-ingest                 # == nom du dossier ; [a-z0-9-], pas de "--"
 description: >
   <≤ 1024 caractères, inclut le trigger d'activation>
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
   version: "0.1.0"
   author: Vivian MAES

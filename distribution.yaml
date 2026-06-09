@@ -16,10 +16,10 @@
 # cron de synchro : voir backlog (v0.5.0). Réf. __projet__/SPEC.md §11.
 
 name: mimir
-version: "0.5.0"
+version: "0.5.1"
 description: "Curateur Mimir — entretient un wiki Obsidian (méthode Karpathy) : extrait des sources, compile par notion, indexe et synchronise."
 author: Vivian MAES
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 
 # Fichiers « possédés » par la distribution : remplacés à chaque mise à jour
 # (le reste du repo copié est préservé s'il a été modifié localement).

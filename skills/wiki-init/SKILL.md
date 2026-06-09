@@ -6,9 +6,9 @@ description: >
   amorce la première synchro. Affiche aussi l'emplacement résolu du wiki. Déclencher sur
   « initialise le wiki », « prépare le second cerveau », « où est mon wiki », « premier
   démarrage ». Idempotent ; strictement borné à work_root (confinement).
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, init, bootstrap, setup]
   hermes:

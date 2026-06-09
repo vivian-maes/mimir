@@ -5,9 +5,9 @@ description: >
   wiki par notion (un article = une notion, jamais un dump brut). Antidoublon, ledger SHA
   idempotent, mise à jour des statuts. Déclencher sur « compile la KB », « ingère les
   sources », « décompose ce PDF en articles ». Borné à work_root.
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, karpathy, ingestion]
   hermes:

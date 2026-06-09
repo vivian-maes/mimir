@@ -5,9 +5,9 @@ description: >
   notions et grilles) et lance l'audit liens en lecture seule (cassés, fantômes, entrées
   vides). Déclencher sur « régénère les index », « audite les liens du wiki », « mets à jour
   la carte des sujets ». Lecture seule pour l'audit ; écritures bornées à work_root.
-license: Proprietary
+license: PolyForm-Noncommercial-1.0.0
 metadata:
-  version: "0.5.0"
+  version: "0.5.1"
   author: Vivian MAES
   tags: [knowledge-base, obsidian, index, audit]
   hermes:
